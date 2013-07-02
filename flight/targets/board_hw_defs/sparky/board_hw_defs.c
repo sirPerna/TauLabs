@@ -1073,88 +1073,7 @@ static const struct pios_tim_channel pios_tim_servoport_v02_pins[] = {
 			.pin_source = GPIO_PinSource6,
 		},
 	},
-	{ // Ch6 TIM2_CH3  (PA2)
-		.timer = TIM2,
-		.timer_chan = TIM_Channel_3,
-		.remap = GPIO_AF_1,
-		.pin = {
-			.gpio = GPIOA,
-			.init = {
-				.GPIO_Pin = GPIO_Pin_2,
-				.GPIO_Speed = GPIO_Speed_2MHz,
-				.GPIO_Mode  = GPIO_Mode_AF,
-				.GPIO_OType = GPIO_OType_PP,
-				.GPIO_PuPd  = GPIO_PuPd_UP
-			},
-			.pin_source = GPIO_PinSource2,
-		},
-	},
-	{ // Ch7 TIM3_CH4  (PB1)
-		.timer = TIM3,
-		.timer_chan = TIM_Channel_4,
-		.remap = GPIO_AF_2,
-		.pin = {
-			.gpio = GPIOB,
-			.init = {
-				.GPIO_Pin = GPIO_Pin_1,
-				.GPIO_Speed = GPIO_Speed_2MHz,
-				.GPIO_Mode  = GPIO_Mode_AF,
-				.GPIO_OType = GPIO_OType_PP,
-				.GPIO_PuPd  = GPIO_PuPd_UP
-			},
-			.pin_source = GPIO_PinSource1,
-		},
-	},
-	{ // Ch8 TIM17_CH1 (PA7)
-		.timer = TIM17,
-		.timer_chan = TIM_Channel_1,
-		.remap = GPIO_AF_1,
-		.pin = {
-			.gpio = GPIOA,
-			.init = {
-				.GPIO_Pin = GPIO_Pin_7,
-				.GPIO_Speed = GPIO_Speed_2MHz,
-				.GPIO_Mode  = GPIO_Mode_AF,
-				.GPIO_OType = GPIO_OType_PP,
-				.GPIO_PuPd  = GPIO_PuPd_UP
-			},
-			.pin_source = GPIO_PinSource7,
-		},
-	},
-#if !defined(PIOS_INCLUDE_ADC)	
-	{ // Ch9 TIM3_CH2  (PA4)
-		.timer = TIM3,
-		.timer_chan = TIM_Channel_2,
-		.remap = GPIO_AF_2,
-		.pin = {
-			.gpio = GPIOA,
-			.init = {
-				.GPIO_Pin = GPIO_Pin_4,
-				.GPIO_Speed = GPIO_Speed_2MHz,
-				.GPIO_Mode  = GPIO_Mode_AF,
-				.GPIO_OType = GPIO_OType_PP,
-				.GPIO_PuPd  = GPIO_PuPd_UP
-			},
-			.pin_source = GPIO_PinSource4,
-		},
-	},
-	{ // Ch10 TIM2_CH2  (PA1)
-		.timer = TIM2,
-		.timer_chan = TIM_Channel_2,
-		.remap = GPIO_AF_1,
-		.pin = {
-			.gpio = GPIOA,
-			.init = {
-				.GPIO_Pin = GPIO_Pin_1,
-				.GPIO_Speed = GPIO_Speed_2MHz,
-				.GPIO_Mode  = GPIO_Mode_AF,
-				.GPIO_OType = GPIO_OType_PP,
-				.GPIO_PuPd  = GPIO_PuPd_UP
-			},
-			.pin_source = GPIO_PinSource1,
-		},
-	},
-#endif  /* PIOS_INCLUDE_ADC */
+
 };
 
 
@@ -1191,23 +1110,23 @@ const struct pios_servo_cfg pios_servo_cfg = {
 
 /*
  * 	INPUTS
-	1:  TIM2_CH4  (PA3)
+	1:  TIM2_CH3  (PA2)
  */
 static const struct pios_tim_channel pios_tim_rcvrport_all_channels[] = {
-	{
+	{ // Ch6 TIM2_CH3  (PA2)
 		.timer = TIM2,
-		.timer_chan = TIM_Channel_4,
+		.timer_chan = TIM_Channel_3,
 		.remap = GPIO_AF_1,
 		.pin = {
 			.gpio = GPIOA,
 			.init = {
-				.GPIO_Pin = GPIO_Pin_3,
+				.GPIO_Pin = GPIO_Pin_2,
 				.GPIO_Speed = GPIO_Speed_2MHz,
 				.GPIO_Mode  = GPIO_Mode_AF,
 				.GPIO_OType = GPIO_OType_PP,
 				.GPIO_PuPd  = GPIO_PuPd_UP
 			},
-			.pin_source = GPIO_PinSource3,
+			.pin_source = GPIO_PinSource2,
 		},
 	},
 };
