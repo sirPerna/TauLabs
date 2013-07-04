@@ -771,6 +771,14 @@ void PIOS_Board_Init(void) {
 		break;		break;
 	}
 
+#if defined(PIOS_INCLUDE_PPM_OUT)
+	uint32_t pios_ppm_out_id;
+	PIOS_PPM_Out_Init(&pios_ppm_out_id, &pios_ppm_out_cfg);
+	PIOS_PPM_OUT_Set(pios_ppm_out_id, 0, 1500);
+	PIOS_PPM_OUT_Set(pios_ppm_out_id, 1, 1500);
+	PIOS_PPM_OUT_Set(pios_ppm_out_id, 2, 1500);
+	PIOS_PPM_OUT_Set(pios_ppm_out_id, 3, 1500);
+#endif
 
 #if defined(PIOS_INCLUDE_GCSRCVR)
 	GCSReceiverInitialize();
