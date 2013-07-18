@@ -749,6 +749,7 @@ static bool home_location_updated;
  * @params[in] outdoor_mode If true use the GPS for position, if false weakly pull to (0,0)
  * @return 0 for success, -1 for failure
  */
+int32_t baro_updates, mag_updates;
 static int32_t updateAttitudeINSGPS(bool first_run, bool outdoor_mode)
 {
 	UAVObjEvent ev;
@@ -827,6 +828,10 @@ static int32_t updateAttitudeINSGPS(bool first_run, bool outdoor_mode)
 	// Don't require HomeLocation.Set to be true but at least require a mag configuration (allows easily
 	// switching between indoor and outdoor mode with Set = false)
 	mag_updated &= (homeLocation.Be[0] != 0 || homeLocation.Be[1] != 0 || homeLocation.Be[2]);
+
+	// Track the number of updates
+	mag_updates += mag_updated;
+	baro_updates += baro_updated;
 
 	// A more stringent requirement for GPS to initialize the filter
 	bool gps_init_usable = gps_updated & (gpsData.Satellites >= 7) && (gpsData.PDOP <= 3.5f) && (homeLocation.Set == HOMELOCATION_SET_TRUE);
@@ -1016,6 +1021,9 @@ static int32_t updateAttitudeINSGPS(bool first_run, bool outdoor_mode)
 
 	// Export the state and variance for monitoring the EKF
 	INSStateData state;
+	state.MagUpdates = mag_updates;
+	state.BaroUpdates = baro_updates;
+	state.BaroOffset = baro_offset;
 	INSGetVariance(state.Var);
 	INSGetState(&state.State[0], &state.State[3], &state.State[6], &state.State[10]);
 	INSStateSet(&state);
