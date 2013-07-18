@@ -1024,6 +1024,9 @@ static int32_t updateAttitudeINSGPS(bool first_run, bool outdoor_mode)
 	state.MagUpdates = mag_updates;
 	state.BaroUpdates = baro_updates;
 	state.BaroOffset = baro_offset;
+	state.Gyros[0] = gyros[0];
+	state.Gyros[1] = gyros[1];
+	state.Gyros[2] = gyros[2];
 	INSGetVariance(state.Var);
 	INSGetState(&state.State[0], &state.State[3], &state.State[6], &state.State[10]);
 	INSStateSet(&state);
