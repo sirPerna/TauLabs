@@ -67,6 +67,7 @@
 #define PIOS_MPU6050_ACCEL
 #define PIOS_MPU6050_SIMPLE_INIT_SEQUENCE
 #define PIOS_INCLUDE_MPU9150
+#define PIOS_INCLUDE_HCSR04
 #define FLASH_FREERTOS
 
 /* Com systems to include */

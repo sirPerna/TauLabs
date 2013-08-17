@@ -1122,6 +1122,7 @@ static const struct pios_tim_channel pios_tim_servoport_v02_pins[] = {
 			.pin_source = GPIO_PinSource2,
 		},
 	},
+#if !defined(PIOS_INCLUDE_HCSR04)
 	{ // Ch7 TIM3_CH4  (PB1)
 		.timer = TIM3,
 		.timer_chan = TIM_Channel_4,
@@ -1154,6 +1155,7 @@ static const struct pios_tim_channel pios_tim_servoport_v02_pins[] = {
 			.pin_source = GPIO_PinSource7,
 		},
 	},
+#endif
 #if !defined(PIOS_INCLUDE_ADC)	
 	{ // Ch9 TIM3_CH2  (PA4)
 		.timer = TIM3,
@@ -1317,6 +1319,53 @@ static const struct pios_internal_adc_cfg internal_adc_cfg = {
 #include "pios_rcvr_priv.h"
 #endif /* PIOS_INCLUDE_RCVR */
 
+/*
+ * SONAR Inputs
+ * PWM Out 7: sonar trigger (PB1)
+ * PWM Out 8: sonar echo (PA7, TIM17_CH1)
+ */
+#if defined(PIOS_INCLUDE_HCSR04)
+#include <pios_hcsr04_priv.h>
+
+static const struct pios_tim_channel pios_tim_hcsr04_port_all_channels[] = {
+    {
+        .timer = TIM17,
+        .timer_chan = TIM_Channel_1,
+        .pin   = {
+            .gpio = GPIOA,
+            .init = {
+                .GPIO_Pin   = GPIO_Pin_7,
+                .GPIO_Mode  = GPIO_Mode_AF,
+                .GPIO_Speed = GPIO_Speed_2MHz,
+                .GPIO_PuPd  = GPIO_PuPd_DOWN
+            },
+            .pin_source     = GPIO_PinSource7,
+        },
+        .remap = GPIO_AF_1,
+    },
+};
+
+const struct pios_hcsr04_cfg pios_hcsr04_cfg = {
+    .tim_ic_init         = {
+        .TIM_ICPolarity  = TIM_ICPolarity_Rising,
+        .TIM_ICSelection = TIM_ICSelection_DirectTI,
+        .TIM_ICPrescaler = TIM_ICPSC_DIV1,
+        .TIM_ICFilter    = 0x0,
+    },
+    .channels     = pios_tim_hcsr04_port_all_channels,
+    .num_channels = NELEMENTS(pios_tim_hcsr04_port_all_channels),
+    .trigger             = {
+        .gpio = GPIOB,
+        .init = {
+            .GPIO_Pin   = GPIO_Pin_1,
+            .GPIO_Mode  = GPIO_Mode_OUT,
+            .GPIO_OType = GPIO_OType_PP,
+            .GPIO_PuPd  = GPIO_PuPd_UP,
+            .GPIO_Speed = GPIO_Speed_2MHz,
+        },
+    },
+};
+#endif /* if defined(PIOS_INCLUDE_HCSR04) */
 
 #if defined(PIOS_INCLUDE_USB)
 #include "pios_usb_priv.h"

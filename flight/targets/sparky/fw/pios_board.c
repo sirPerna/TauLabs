@@ -991,6 +991,11 @@ void PIOS_Board_Init(void) {
 		panic(4);
 #endif
 
+#if defined(PIOS_INCLUDE_HCSR04)
+        uintptr_t pios_hcsr04_id;
+        PIOS_HCSR04_Init(&pios_hcsr04_id, &pios_hcsr04_cfg);
+#endif
+
 #if defined(PIOS_INCLUDE_GPIO)
 	PIOS_GPIO_Init();
 #endif
