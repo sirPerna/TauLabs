@@ -54,6 +54,7 @@
 #include "altitudeholdsettings.h"
 #include "altitudeholddesired.h"	// object that will be updated by the module
 #include "baroaltitude.h"
+#include "sonaraltitude.h"
 #include "positionactual.h"
 #include "flightstatus.h"
 #include "stabilizationdesired.h"
@@ -156,11 +157,11 @@ static void altitudeHoldTask(void *parameters)
 
 	// Listen for updates.
 	AltitudeHoldDesiredConnectQueue(queue);
-	BaroAltitudeConnectQueue(queue);
+	SonarAltitudeConnectQueue(queue);
 	FlightStatusConnectQueue(queue);
 	AccelsConnectQueue(queue);
 
-	BaroAltitudeAltitudeGet(&smoothed_altitude);
+	SonarAltitudeRangeGet(&smoothed_altitude);
 	running = false;
 	enum init_state {WAITING_BARO, WAITIING_INIT, INITED} init = WAITING_BARO;
 
@@ -175,8 +176,11 @@ static void altitudeHoldTask(void *parameters)
 
 			// Todo: Add alarm if it should be running
 			continue;
-		} else if (ev.obj == BaroAltitudeHandle()) {
-			baro_updated = true;
+		} else if (ev.obj == SonarAltitudeHandle()) {
+			SonarAltitudeData sonar;
+			SonarAltitudeGet(&sonar);
+			if (sonar.RangingStatus == SONARALTITUDE_RANGINGSTATUS_INRANGE)
+				baro_updated = true;
 
 			init = (init == WAITING_BARO) ? WAITIING_INIT : init;
 		} else if (ev.obj == FlightStatusHandle()) {
@@ -218,8 +222,8 @@ static void altitudeHoldTask(void *parameters)
 			AccelsGet(&accels);
 			AttitudeActualData attitudeActual;
 			AttitudeActualGet(&attitudeActual);
-			BaroAltitudeData baro;
-			BaroAltitudeGet(&baro);
+			SonarAltitudeData baro;
+			SonarAltitudeGet(&baro);
 
 			/* Downsample accels to stop this calculation consuming too much CPU */
 			accels_accum[0] += accels.x;
@@ -239,7 +243,7 @@ static void altitudeHoldTask(void *parameters)
 			this_time_ms = TICKS2MS(xTaskGetTickCount());
 
 			if (init == WAITIING_INIT) {
-				z[0] = baro.Altitude;
+				z[0] = baro.Range;
 				z[1] = 0;
 				z[2] = accels.z;
 				z[3] = 0;
@@ -247,7 +251,9 @@ static void altitudeHoldTask(void *parameters)
 			} else if (init == WAITING_BARO)
 				continue;
 
-			x[0] = baro.Altitude;
+			z[3] = 0;
+
+			x[0] = baro.Range;
 			//rotate avg accels into earth frame and store it
 			if(1) {
 				float q[4], Rbe[3][3];
