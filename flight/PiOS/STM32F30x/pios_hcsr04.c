@@ -59,6 +59,7 @@ struct pios_hcsr04_dev {
 	uint8_t CaptureState[PIOS_HCSR04_NUM_CHANNELS];
 	uint16_t RiseValue[PIOS_HCSR04_NUM_CHANNELS];
 	uint16_t FallValue[PIOS_HCSR04_NUM_CHANNELS];
+	uint16_t TriggerValue[PIOS_HCSR04_NUM_CHANNELS];
 	uint32_t CaptureValue[PIOS_HCSR04_NUM_CHANNELS];
 	uint32_t CapCounter[PIOS_HCSR04_NUM_CHANNELS];
 	uint32_t us_since_update[PIOS_HCSR04_NUM_CHANNELS];
@@ -191,6 +192,8 @@ int32_t PIOS_HCSR04_Init(uintptr_t *hcsr04_id, const struct pios_hcsr04_cfg *cfg
 static void PIOS_HCSR04_Trigger(void)
 {
 	GPIO_SetBits(dev->cfg->trigger.gpio, dev->cfg->trigger.init.GPIO_Pin);
+	const struct pios_tim_channel *chan = &dev->cfg->channels[0];
+	dev->TriggerValue[0] = chan->timer->CNT;
 	PIOS_DELAY_WaituS(15);
 	GPIO_ResetBits(dev->cfg->trigger.gpio, dev->cfg->trigger.init.GPIO_Pin);
 }
@@ -203,7 +206,7 @@ static void PIOS_HCSR04_Trigger(void)
  */
 static int32_t PIOS_HCSR04_Get(void)
 {
-	return dev->CaptureValue[0];
+	return ((uint16_t) (dev->RiseValue[0] - dev->TriggerValue[0]));
 }
 
 static int32_t PIOS_HCSR04_Completed(void)
@@ -231,6 +234,7 @@ static void PIOS_HCSR04_tim_overflow_cb(uintptr_t tim_id, uintptr_t context, uin
 		hcsr04_dev->RiseValue[channel]       = 0;
 		hcsr04_dev->FallValue[channel]       = 0;
 		hcsr04_dev->CaptureValue[channel]    = -1;
+		hcsr04_dev->TriggerValue[channel]    = -1;
 		hcsr04_dev->us_since_update[channel] = 0;
 	}
 }
@@ -293,11 +297,9 @@ static void PIOS_HCSR04_tim_edge_cb(uintptr_t tim_id, uintptr_t context, uint8_t
 
 static void PIOS_HCSR04_Task(void *parameters)
 {
-	int32_t value    = 0;
+	int32_t delay       = 0;
+	float   distance    = 0;
 	int32_t timeout  = 10;
-	float coeff      = 0.25;
-	float height_out = 0;
-	float height_in  = 0;
 
 	PIOS_HCSR04_Trigger();
 
@@ -305,17 +307,16 @@ static void PIOS_HCSR04_Task(void *parameters)
 		struct pios_sensor_sonar_data data;
 		// Compute the current ranging distance
 		if (PIOS_HCSR04_Completed()) {
-			value = PIOS_HCSR04_Get();
+			delay = PIOS_HCSR04_Get();
 			// from 2.55cm to 4m
-			if ((value > 150) && (value < 23529)) {
-				height_in  = value * 0.00034f / 2.0f;
-				height_out = (height_out * (1 - coeff)) + (height_in * coeff);
+			if ((delay > 150) && (delay < 23529)) {
+				distance = (delay - 250) * (340.0e-6f / 2);
 
-				data.range = height_out; // m/us
+				data.range = distance;
 				data.valid_range = true;
 				xQueueSend(dev->queue, (void *)&data, 0);
 			} else {
-				if (value <= 150)
+				if (delay <= 150)
 					data.range = -1;
 				data.valid_range = false;
 				xQueueSend(dev->queue, (void *)&data, 0);
