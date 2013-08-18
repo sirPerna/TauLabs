@@ -1122,7 +1122,7 @@ static const struct pios_tim_channel pios_tim_servoport_v02_pins[] = {
 			.pin_source = GPIO_PinSource2,
 		},
 	},
-#if !defined(PIOS_INCLUDE_HCSR04)
+#if !defined(PIOS_INCLUDE_HCSR04) && !defined(PIOS_INCLUDE_SDMIO)
 	{ // Ch7 TIM3_CH4  (PB1)
 		.timer = TIM3,
 		.timer_chan = TIM_Channel_4,
@@ -1366,6 +1366,50 @@ const struct pios_hcsr04_cfg pios_hcsr04_cfg = {
     },
 };
 #endif /* if defined(PIOS_INCLUDE_HCSR04) */
+
+
+#if defined(PIOS_INCLUDE_SDMIO)
+#include <pios_sdmio_priv.h>
+
+static const struct pios_tim_channel pios_tim_sdmio_port_all_channels[] = {
+    {
+        .timer = TIM17,
+        .timer_chan = TIM_Channel_1,
+        .pin   = {
+            .gpio = GPIOA,
+            .init = {
+                .GPIO_Pin   = GPIO_Pin_7,
+                .GPIO_Mode  = GPIO_Mode_AF,
+                .GPIO_Speed = GPIO_Speed_2MHz,
+                .GPIO_PuPd  = GPIO_PuPd_DOWN
+            },
+            .pin_source     = GPIO_PinSource7,
+        },
+        .remap = GPIO_AF_1,
+    },
+};
+
+const struct pios_sdmio_cfg pios_sdmio_cfg = {
+    .tim_ic_init         = {
+        .TIM_ICPolarity  = TIM_ICPolarity_Rising,
+        .TIM_ICSelection = TIM_ICSelection_DirectTI,
+        .TIM_ICPrescaler = TIM_ICPSC_DIV1,
+        .TIM_ICFilter    = 0x0,
+    },
+    .channels     = pios_tim_sdmio_port_all_channels,
+    .num_channels = NELEMENTS(pios_tim_sdmio_port_all_channels),
+    .trigger             = {
+        .gpio = GPIOB,
+        .init = {
+            .GPIO_Pin   = GPIO_Pin_1,
+            .GPIO_Mode  = GPIO_Mode_OUT,
+            .GPIO_OType = GPIO_OType_PP,
+            .GPIO_PuPd  = GPIO_PuPd_UP,
+            .GPIO_Speed = GPIO_Speed_2MHz,
+        },
+    },
+};
+#endif /* PIOS_INCLUDE_SDMIO */
 
 #if defined(PIOS_INCLUDE_USB)
 #include "pios_usb_priv.h"
