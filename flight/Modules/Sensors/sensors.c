@@ -378,12 +378,14 @@ static void update_sonar(struct pios_sensor_sonar_data *sonar)
 		AttitudeActualData attitude;
 		AttitudeActualGet(&attitude);
 
-		sonarAltitude.Range = cosf(attitude.Roll  * DEG2RAD) *
+		sonarAltitude.Range = sonar->range;
+		sonarAltitude.Height = cosf(attitude.Roll  * DEG2RAD) *
 				      cosf(attitude.Pitch * DEG2RAD) *
 				      sonar->range;
 		sonarAltitude.RangingStatus = SONARALTITUDE_RANGINGSTATUS_INRANGE;
 	} else {
 		sonarAltitude.Range = 0;
+		sonarAltitude.Height = 0;
 		sonarAltitude.RangingStatus = SONARALTITUDE_RANGINGSTATUS_OUTOFRANGE;
 	}
 
