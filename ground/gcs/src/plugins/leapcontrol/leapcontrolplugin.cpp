@@ -23,9 +23,10 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+
+#include "leapinterface.h"
 #include "leapcontrolplugin.h"
 #include "leapcontrolgadgetfactory.h"
-#include <QDebug>
 #include <QtPlugin>
 #include <QStringList>
 #include <extensionsystem/pluginmanager.h>
@@ -47,6 +48,10 @@ bool LeapControlPlugin::initialize(const QStringList& args, QString *errMsg)
 
     mf = new LeapControlGadgetFactory(this);
     addAutoReleasedObject(mf);
+
+    LeapInterface *li = new LeapInterface(this);
+    li->start();
+    addAutoReleasedObject(li);
 
     return true;
 }

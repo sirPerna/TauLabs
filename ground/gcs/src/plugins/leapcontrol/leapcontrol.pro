@@ -7,17 +7,20 @@ QT += network
 include(../../taulabsgcsplugin.pri) 
 include(../../plugins/coreplugin/coreplugin.pri) 
 include(../../plugins/uavobjects/uavobjects.pri)
+include(leap.pri)
 
-HEADERS += leapcontrolgadget.h
+HEADERS += leapcontrolgadget.h \
+    leapinterface.h
 HEADERS += leapcontrolgadgetwidget.h
 HEADERS += leapcontrolgadgetfactory.h
 HEADERS += leapcontrolplugin.h
 
-SOURCES += leapcontrolgadget.cpp
+SOURCES += leapcontrolgadget.cpp \
+    leapinterface.cpp
 SOURCES += leapcontrolgadgetwidget.cpp
 SOURCES += leapcontrolgadgetfactory.cpp
 SOURCES += leapcontrolplugin.cpp
 
-OTHER_FILES += LeapControl.pluginspec
+OTHER_FILES += LeapControl.pluginspec \
 
 FORMS += leapcontrol.ui
