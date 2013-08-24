@@ -67,6 +67,7 @@ UAVOBJSRCFILENAMES += vtolpathfollowersettings
 UAVOBJSRCFILENAMES += homelocation
 UAVOBJSRCFILENAMES += i2cstats
 UAVOBJSRCFILENAMES += insstate
+UAVOBJSRCFILENAMES += leapcontrol
 UAVOBJSRCFILENAMES += manualcontrolcommand
 UAVOBJSRCFILENAMES += manualcontrolsettings
 UAVOBJSRCFILENAMES += mixersettings

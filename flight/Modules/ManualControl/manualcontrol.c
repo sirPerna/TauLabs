@@ -41,6 +41,7 @@
 #include "control.h"
 #include "failsafe_control.h"
 #include "tablet_control.h"
+#include "leap_control.h"
 #include "transmitter_control.h"
 
 #include "flightstatus.h"
@@ -95,7 +96,7 @@ int32_t ManualControlInitialize()
 	failsafe_control_initialize();
 	transmitter_control_initialize();
 	tablet_control_initialize();
-
+	leap_control_initialize();
 
 	return 0;
 }
@@ -146,6 +147,16 @@ static void manualControlTask(void *parameters)
 		case FLIGHTSTATUS_CONTROLSOURCE_TABLET:
 			if (tablet_control_select(reset_controller) == 0) {
 				control_events = tablet_control_get_events();
+			} else {
+				// Failure in tablet control.  This would be better if done
+				// at the selection stage before the tablet is even used.
+				failsafe_control_select(false);
+				control_events = failsafe_control_get_events();
+			}
+			break;
+		case FLIGHTSTATUS_CONTROLSOURCE_LEAP:
+			if (leap_control_select(reset_controller) == 0) {
+				control_events = leap_control_get_events();
 			} else {
 				// Failure in tablet control.  This would be better if done
 				// at the selection stage before the tablet is even used.
@@ -242,6 +253,9 @@ static FlightStatusControlSourceOptions control_source_select()
 	} else if (transmitter_control_get_flight_mode() ==
 	           MANUALCONTROLSETTINGS_FLIGHTMODEPOSITION_TABLETCONTROL) {
 		return FLIGHTSTATUS_CONTROLSOURCE_TABLET;
+	} else if (transmitter_control_get_flight_mode() ==
+	           MANUALCONTROLSETTINGS_FLIGHTMODEPOSITION_LEAPCONTROL) {
+		return FLIGHTSTATUS_CONTROLSOURCE_LEAP;
 	} else {
 		return FLIGHTSTATUS_CONTROLSOURCE_TRANSMITTER;
 	}
