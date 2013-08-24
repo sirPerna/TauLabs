@@ -153,6 +153,9 @@ int32_t configuration_check()
 					}
 				}
 				break;
+			case MANUALCONTROLSETTINGS_FLIGHTMODEPOSITION_LEAPCONTROL:
+				// No error
+				break;
 			default:
 				// Uncovered modes are automatically an error
 				error_code = SYSTEMALARMS_CONFIGERROR_UNDEFINED;
