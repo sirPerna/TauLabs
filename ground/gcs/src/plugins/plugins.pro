@@ -265,6 +265,15 @@ OSG {
     SUBDIRS += plugin_osgearthview
 }
 
+# OSG Earth View plugin
+#LEAP {
+    plugin_leapcontrol.subdir = leapcontrol
+    plugin_leapcontrol.depends = plugin_coreplugin
+    plugin_leapcontrol.depends += plugin_uavobjects
+    plugin_leapcontrol.depends += plugin_uavobjectwidgetutils
+    SUBDIRS += plugin_leapcontrol
+#}
+
 # Magic Waypoint gadget
 !LIGHTWEIGHT_GCS {
 plugin_magicwaypoint.subdir = magicwaypoint
