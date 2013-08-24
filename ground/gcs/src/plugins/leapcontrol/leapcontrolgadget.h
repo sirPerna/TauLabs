@@ -29,6 +29,7 @@
 
 #include <coreplugin/iuavgadget.h>
 #include "leapcontrolplugin.h"
+#include "leapcontrol.h"
 #include <QTimer>
 #include <QTime>
 
@@ -53,11 +54,13 @@ public:
     void loadConfiguration(IUAVGadgetConfiguration* config);
 
 private:
-    QWidget *m_widget;
+    QWidget     * m_widget;
+    LeapControl * m_leapControl;
 
 signals:
 
 protected slots:
+    void handUpdated(bool present, double x, double y, double z, double roll, double pitch, double yaw);
 };
 
 

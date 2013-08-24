@@ -38,9 +38,6 @@ LeapInterface::LeapInterface(QObject *parent) :
 //! Start receiveing events
 void LeapInterface::getUpdate()
 {
-    DeviceList devices = m_controller.devices();
-    qDebug() << "Get update: " << devices.count();
-
     Frame frame = m_controller.frame();
 
     if (hand_present && frame.hands().isEmpty()) {
@@ -70,8 +67,6 @@ void LeapInterface::getUpdate()
         y_pos = hand.palmPosition()[0];
         z_pos = -hand.palmPosition()[1];
     }
-
-    qDebug() << hand_present << x_pos << y_pos << z_pos << roll << pitch << yaw;
 
     emit handUpdated(hand_present, x_pos, y_pos, z_pos, roll, pitch, yaw);
 }

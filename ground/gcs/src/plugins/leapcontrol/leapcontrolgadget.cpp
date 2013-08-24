@@ -41,6 +41,8 @@
  */
 #include "leapcontrolgadget.h"
 #include "leapcontrolgadgetwidget.h"
+#include "leapinterface.h"
+
 #include "extensionsystem/pluginmanager.h"
 #include "uavobjectmanager.h"
 #include "uavobject.h"
@@ -51,6 +53,20 @@ LeapControlGadget::LeapControlGadget(QString classId, LeapControlGadgetWidget *w
         m_widget(widget)
 {
     Q_UNUSED(plugin)
+
+    ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
+    Q_ASSERT(pm != NULL);
+    LeapInterface *lf = pm->getObject<LeapInterface>();
+    Q_ASSERT(lf != NULL);
+
+    UAVObjectManager *objmngr = pm->getObject<UAVObjectManager>();
+    Q_ASSERT(objmngr != NULL);
+
+    m_leapControl = LeapControl::GetInstance(objmngr);
+    Q_ASSERT(m_leapControl);
+
+    connect(lf, SIGNAL(handUpdated(bool,double,double,double,double,double,double)), this,
+            SLOT(handUpdated(bool,double,double,double,double,double,double)));
 }
 
 LeapControlGadget::~LeapControlGadget()
@@ -61,6 +77,25 @@ LeapControlGadget::~LeapControlGadget()
 void LeapControlGadget::loadConfiguration(IUAVGadgetConfiguration* config)
 {
     Q_UNUSED(config);
+}
+
+//! When hand is updated, store the information in a UAVO
+void LeapControlGadget::handUpdated(bool present, double /*x*/, double /*y*/, double /*z*/,
+                                    double roll, double pitch, double yaw)
+{
+    LeapControl::DataFields leapControlData = m_leapControl->getData();
+
+    if (present) {
+        leapControlData.Present = LeapControl::PRESENT_TRUE;
+        leapControlData.Roll = roll;
+        leapControlData.Pitch = pitch;
+        leapControlData.Yaw = yaw;
+    } else {
+        leapControlData.Present = LeapControl::PRESENT_FALSE;
+    }
+
+    m_leapControl->setData(leapControlData);
+    m_leapControl->updated();
 }
 
 /**
