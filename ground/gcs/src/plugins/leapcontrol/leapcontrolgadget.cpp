@@ -95,7 +95,6 @@ void LeapControlGadget::handUpdated(bool present, double /*x*/, double /*y*/, do
     }
 
     m_leapControl->setData(leapControlData);
-    m_leapControl->updated();
 }
 
 /**
