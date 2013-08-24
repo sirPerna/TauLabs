@@ -58,7 +58,7 @@ void LeapInterface::getUpdate()
         const Vector normal = hand.palmNormal();
         const Vector direction = hand.direction();
 
-        roll = normal.roll() * RAD_TO_DEG;
+        roll = -normal.roll() * RAD_TO_DEG;
         pitch = direction.pitch() * RAD_TO_DEG;
         yaw = direction.yaw() * RAD_TO_DEG;
 
