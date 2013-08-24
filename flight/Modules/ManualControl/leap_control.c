@@ -75,7 +75,7 @@ int32_t leap_control_select(bool reset_controller)
 		stabilizationDesired.Roll      = 0;
 		stabilizationDesired.Pitch     = 0;
 		stabilizationDesired.Yaw       = 0;
-		stabilizationDesired.Throttle  = 0;
+		stabilizationDesired.Throttle  = -1;
 	}
 	stabilizationDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_ROLL] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
 	stabilizationDesired.StabilizationMode[STABILIZATIONDESIRED_STABILIZATIONMODE_PITCH] = STABILIZATIONDESIRED_STABILIZATIONMODE_ATTITUDE;
