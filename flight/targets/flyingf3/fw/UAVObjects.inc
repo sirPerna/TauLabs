@@ -110,6 +110,7 @@ UAVOBJSRCFILENAMES += altitudeholddesired
 UAVOBJSRCFILENAMES += waypoint
 UAVOBJSRCFILENAMES += waypointactive
 UAVOBJSRCFILENAMES += groundpathfollowersettings
+UAVOBJSRCFILENAMES += loitercommand
 
 UAVOBJSRCFILENAMES += txpidsettings
 
