@@ -60,6 +60,7 @@ OPTMODULES += Battery
 OPTMODULES += VibrationAnalysis
 OPTMODULES += UAVOMavlinkBridge
 OPTMODULES += Airspeed/revolution
+OPTMODULES += Geofence
 
 # Paths
 OPUAVTALKINC = $(OPUAVTALK)/inc

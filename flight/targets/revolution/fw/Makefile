@@ -85,6 +85,7 @@ OPTMODULES += UAVOMavlinkBridge
 OPTMODULES += Battery
 OPTMODULES += VibrationAnalysis
 OPTMODULES += Airspeed/revolution
+OPTMODULES += Geofence
 
 PYMODULES = 
 #FlightPlan

@@ -89,6 +89,7 @@ OPTMODULES += GroundPathFollower
 OPTMODULES += CameraStab
 OPTMODULES += OveroSync/simulated
 OPTMODULES += Autotune
+OPTMODULES += Geofence
 
 ifeq ($(FILTER_ARCHITECTURE),YES)
 MODULES += State
