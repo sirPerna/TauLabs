@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>448</width>
-    <height>542</height>
+    <width>509</width>
+    <height>534</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Modules</string>
@@ -124,6 +130,16 @@
          </property>
          <property name="text">
           <string>Path Planner</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbGeofence">
+         <property name="toolTip">
+          <string>This enables the path planner module which is required for waypoint navigation.</string>
+         </property>
+         <property name="text">
+          <string>Geofence</string>
          </property>
         </widget>
        </item>
@@ -634,6 +650,92 @@
           <string>Start test</string>
          </property>
         </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabGeofence">
+      <attribute name="title">
+       <string>Geofence</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_10">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_21">
+         <property name="text">
+          <string>Geofence Warning Radius (m)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_22">
+         <property name="text">
+          <string>Geofence Error Radius (m)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="sb_geofenceWarning">
+         <property name="maximum">
+          <number>1000</number>
+         </property>
+         <property name="objrelation" stdset="0">
+          <stringlist>
+           <string>objname:GeoFenceSettings</string>
+           <string>fieldname:WarningRadius</string>
+          </stringlist>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QSpinBox" name="sb_geofenceError">
+         <property name="maximum">
+          <number>1000</number>
+         </property>
+         <property name="objrelation" stdset="0">
+          <stringlist>
+           <string>objname:GeoFenceSettings</string>
+           <string>fieldname:ErrorRadius</string>
+          </stringlist>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="label_23">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default behavior of the geofence is to disable the motors when the system flies more than the error radius from home.&lt;/p&gt;&lt;p&gt;Flying past the warning radius will provide an warning in the alarms to alert the pilot.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="4" column="0">
+        <spacer name="verticalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>

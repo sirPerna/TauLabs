@@ -33,6 +33,7 @@
 #include "airspeedsettings.h"
 #include "flightbatterysettings.h"
 #include "flightbatterystate.h"
+#include "geofencesettings.h"
 #include "modulesettings.h"
 #include "vibrationanalysissettings.h"
 
@@ -74,6 +75,7 @@ ConfigModuleWidget::ConfigModuleWidget(QWidget *parent) : ConfigTaskWidget(paren
     addUAVObjectToWidgetRelation(moduleSettingsName, "AdminState", ui->cbVibrationAnalysis, ModuleSettings::ADMINSTATE_VIBRATIONANALYSIS);
     addUAVObjectToWidgetRelation(moduleSettingsName, "AdminState", ui->cbVtolFollower, ModuleSettings::ADMINSTATE_VTOLPATHFOLLOWER);
     addUAVObjectToWidgetRelation(moduleSettingsName, "AdminState", ui->cbPathPlanner, ModuleSettings::ADMINSTATE_PATHPLANNER);
+    addUAVObjectToWidgetRelation(moduleSettingsName, "AdminState", ui->cbGeofence, ModuleSettings::ADMINSTATE_GEOFENCE);
 
     addUAVObjectToWidgetRelation(batterySettingsName, "SensorType", ui->gb_measureVoltage, FlightBatterySettings::SENSORTYPE_BATTERYVOLTAGE);
     addUAVObjectToWidgetRelation(batterySettingsName, "SensorType", ui->gb_measureCurrent, FlightBatterySettings::SENSORTYPE_BATTERYCURRENT);
@@ -127,8 +129,11 @@ ConfigModuleWidget::ConfigModuleWidget(QWidget *parent) : ConfigTaskWidget(paren
     ui->cbPathPlanner->setProperty(trueString.toAscii(), "Enabled");
     ui->cbPathPlanner->setProperty(falseString.toAscii(), "Disabled");
 
-    ui->gb_measureVoltage->setProperty(trueString.toAscii(), "Enabled");
-    ui->gb_measureVoltage->setProperty(falseString.toAscii(), "Disabled");
+    ui->cbGeofence->setProperty(trueString.toLatin1(), "Enabled");
+    ui->cbGeofence->setProperty(falseString.toLatin1(), "Disabled");
+
+    ui->gb_measureVoltage->setProperty(trueString.toLatin1(), "Enabled");
+    ui->gb_measureVoltage->setProperty(falseString.toLatin1(), "Disabled");
 
     ui->gb_measureCurrent->setProperty(trueString.toAscii(), "Enabled");
     ui->gb_measureCurrent->setProperty(falseString.toAscii(), "Disabled");
@@ -136,6 +141,7 @@ ConfigModuleWidget::ConfigModuleWidget(QWidget *parent) : ConfigTaskWidget(paren
     enableBatteryTab(false);
     enableAirspeedTab(false);
     enableVibrationTab(false);
+    enableGeofenceTab(false);
 
     // Load UAVObjects to widget relations from UI file
     // using objrelation dynamic property
@@ -179,6 +185,10 @@ void ConfigModuleWidget::recheckTabs()
     obj = getObjectManager()->getObject(VibrationAnalysisSettings::NAME);
     connect(obj, SIGNAL(transactionCompleted(UAVObject*,bool)), this, SLOT(objectUpdated(UAVObject*,bool)), Qt::UniqueConnection);
     obj->requestUpdate();
+
+    obj = getObjectManager()->getObject(GeoFenceSettings::NAME);
+    connect(obj, SIGNAL(transactionCompleted(UAVObject*,bool)), this, SLOT(objectUpdated(UAVObject*,bool)), Qt::UniqueConnection);
+    obj->requestUpdate();
 }
 
 //! Enable appropriate tab when objects are updated
@@ -194,6 +204,8 @@ void ConfigModuleWidget::objectUpdated(UAVObject * obj, bool success)
         enableBatteryTab(success);
     else if (objName.compare(VibrationAnalysisSettings::NAME) == 0)
         enableVibrationTab(success);
+    else if (objName.compare(GeoFenceSettings::NAME) == 0)
+        enableGeofenceTab(success);
 }
 
 /**
@@ -350,6 +362,13 @@ void ConfigModuleWidget::enableAirspeedTab(bool enabled)
 void ConfigModuleWidget::enableVibrationTab(bool enabled)
 {
     int idx = ui->moduleTab->indexOf(ui->tabVibration);
+    ui->moduleTab->setTabEnabled(idx,enabled);
+}
+
+//! Enable or disable the vibration tab
+void ConfigModuleWidget::enableGeofenceTab(bool enabled)
+{
+    int idx = ui->moduleTab->indexOf(ui->tabGeofence);
     ui->moduleTab->setTabEnabled(idx,enabled);
 }
 
