@@ -29,7 +29,10 @@
 
 #include "openpilot.h"
 #include "modulesettings.h"
-#include "cameradesired.h"
+
+#include "attitudeactual.h"
+#include "accels.h"
+#include "positionactual.h"
 
 // Private constants
 #define MAX_QUEUE_SIZE   5
@@ -47,7 +50,6 @@ static bool module_enabled;
 // Private functions
 static void    uavoRelayTask(void *parameters);
 static int32_t send_data(uint8_t *data, int32_t length);
-static void    register_object(UAVObjHandle obj);
 
 // Local variables
 static uintptr_t uavorelay_com_id;
@@ -63,7 +65,7 @@ extern uintptr_t pios_com_can_id;
 int32_t UAVORelayInitialize(void)
 {
 	// TODO: make selectable
-	uavorelay_com_id = pios_com_can_id;
+	uavorelay_com_id = PIOS_COM_MAVLINK;
 
 #ifdef MODULE_UAVORelay_BUILTIN
 	module_enabled = true;
@@ -89,8 +91,6 @@ int32_t UAVORelayInitialize(void)
 	// Initialise UAVTalk
 	uavTalkCon = UAVTalkInitialize(&send_data);
 
-	CameraDesiredInitialize();
-
 	return 0;
 }
 
@@ -105,11 +105,7 @@ int32_t UAVORelayStart(void)
 	if (module_enabled == false) {
 		return -1;
 	}
-	
-	// Register objects to relay
-	if (CameraDesiredHandle())
-		register_object(CameraDesiredHandle());
-	
+		
 	// Start relay task
 	xTaskCreate(uavoRelayTask, (signed char *)"UAVORelay", STACK_SIZE_BYTES/4,
 	            NULL, TASK_PRIORITY, &uavoRelayTaskHandle);
@@ -119,46 +115,18 @@ int32_t UAVORelayStart(void)
 	return 0;
 }
 
-MODULE_INITCALL(UAVORelayInitialize, UAVORelayStart)
-;
-/**
- * Register a new object, adds object to local list and connects the queue depending on the object's
- * telemetry settings.
- * \param[in] obj Object to connect
- */
-static void register_object(UAVObjHandle obj)
-{
-	int32_t eventMask;
-	eventMask = EV_UPDATED | EV_UPDATED_MANUAL | EV_UPDATE_REQ | EV_UNPACKED;
-	UAVObjConnectQueue(obj, queue, eventMask);
-}
+MODULE_INITCALL(UAVORelayInitialize, UAVORelayStart);
 
 static void uavoRelayTask(void *parameters)
 {
-	UAVObjEvent ev;
-
 	// Loop forever
 	while (1) {
 
-		vTaskDelay(50);
-
-		// Wait for queue message
-		if (xQueueReceive(queue, &ev, 2) == pdTRUE) {
-			// Process event.  This calls transmitData
-			UAVTalkSendObject(uavTalkCon, ev.obj, ev.instId, false, 0);
-		}
-
-		// Process incoming data in sufficient chunks that we keep up
-		uint8_t serial_data[8];
-		uint16_t bytes_to_process;
-
-		bytes_to_process = PIOS_COM_ReceiveBuffer(uavorelay_com_id, serial_data, sizeof(serial_data), 0);
-		do {
-			bytes_to_process = PIOS_COM_ReceiveBuffer(uavorelay_com_id, serial_data, sizeof(serial_data), 0);
-			for (uint8_t i = 0; i < bytes_to_process; i++)
-				UAVTalkProcessInputStream(uavTalkCon,serial_data[i]);
-		} while (bytes_to_process > 0);
-
+		// Do not update anything at more than 10 Hz
+		vTaskDelay(5);
+		UAVTalkSendObjectTimestamped(uavTalkCon, AttitudeActualHandle(), 0, false, 0);
+		UAVTalkSendObjectTimestamped(uavTalkCon, AccelsHandle(), 0, false, 0);
+		UAVTalkSendObjectTimestamped(uavTalkCon, PositionActualHandle(), 0, false, 0);
 	}
 }
 
@@ -171,7 +139,7 @@ static void uavoRelayTask(void *parameters)
  */
 static int32_t send_data(uint8_t *data, int32_t length)
 {
-	if( PIOS_COM_SendBufferNonBlocking(uavorelay_com_id, data, length) < 0)
+	if( PIOS_COM_SendBuffer(uavorelay_com_id, data, length) < 0)
 		return -1;
 
 	return length;
