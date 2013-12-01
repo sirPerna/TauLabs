@@ -31,8 +31,8 @@
 #include "modulesettings.h"
 
 #include "attitudeactual.h"
-#include "accels.h"
-#include "positionactual.h"
+#include "baroaltitude.h"
+#include "gpsposition.h"
 
 // Private constants
 #define MAX_QUEUE_SIZE   5
@@ -122,11 +122,11 @@ static void uavoRelayTask(void *parameters)
 	// Loop forever
 	while (1) {
 
-		// Do not update anything at more than 10 Hz
-		vTaskDelay(5);
+		// Do not update anything at more than 40 Hz
+		vTaskDelay(25);
 		UAVTalkSendObjectTimestamped(uavTalkCon, AttitudeActualHandle(), 0, false, 0);
-		UAVTalkSendObjectTimestamped(uavTalkCon, AccelsHandle(), 0, false, 0);
-		UAVTalkSendObjectTimestamped(uavTalkCon, PositionActualHandle(), 0, false, 0);
+		UAVTalkSendObjectTimestamped(uavTalkCon, BaroAltitudeHandle(), 0, false, 0);
+		UAVTalkSendObjectTimestamped(uavTalkCon, GPSPositionHandle(), 0, false, 0);
 	}
 }
 
