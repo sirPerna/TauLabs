@@ -23,6 +23,8 @@
 
 package org.taulabs.androidgcs.fragments;
 
+import java.util.ArrayList;
+
 import org.taulabs.androidgcs.ObjectManagerActivity;
 import org.taulabs.androidgcs.R;
 import org.taulabs.androidgcs.telemetry.tasks.HistoryTask;
@@ -43,6 +45,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 
 public class Graph extends ObjectManagerFragment {
@@ -53,7 +56,9 @@ public class Graph extends ObjectManagerFragment {
 	private static final boolean DEBUG = LOGLEVEL > 0;
 
 	private HistoryTask history;
-	
+	private ArrayList <GraphView> graphView = new ArrayList<GraphView>();
+	private ArrayList <GraphViewSeries> eegSeries = new ArrayList <GraphViewSeries>();
+
 	// @Override
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -74,17 +79,17 @@ public class Graph extends ObjectManagerFragment {
 			Log.e(TAG, "Error: null history");
 
 		// Create array of data objects which index into the history
-		GraphViewDataInterface eegData[] = new GraphViewDataInterface[HistoryTask.HISTORY_LEN];
-		for (int i = 0; i < HistoryTask.HISTORY_LEN; i++) {
-			eegData[i] = new DataInterface(i);
+		GraphViewDataInterface eegData[][] = new GraphViewDataInterface[HistoryTask.CHANNELS][HistoryTask.HISTORY_LEN];
+		for (int i = 0; i < HistoryTask.CHANNELS; i++) {
+			for (int j = 0; j < HistoryTask.HISTORY_LEN; j++) {
+				eegData[i][j] = new DataInterface(i,j);
+			}
+			
+			// Create a data series consisting of these data interfaces
+			eegSeries.add(new GraphViewSeries(eegData[i]));
 		}
-		
-		// Create a data series consisting of these data interfaces
-		eegSeries = new GraphViewSeries(eegData);
 	}
-	
-	GraphView graphView;
-	GraphViewSeries eegSeries;
+		
 	Thread timer;
 	
 	private class DataInterface implements GraphViewDataInterface {
@@ -92,7 +97,7 @@ public class Graph extends ObjectManagerFragment {
 		int idx;
 		int channel = 0;
 		
-		public DataInterface(int idx) {
+		public DataInterface(int channel, int idx) {
 			this.idx = idx;
 		}
 		
@@ -112,8 +117,10 @@ public class Graph extends ObjectManagerFragment {
 	    public void handleMessage (Message msg) {
 
 	    	// Force a redraw which will look up the fresh data
-	    	graphView.removeAllSeries();
-			graphView.addSeries(eegSeries);
+	    	for (int i = 0; i < HistoryTask.CHANNELS; i++) {
+	    		graphView.get(i).removeAllSeries();
+	    		graphView.get(i).addSeries(eegSeries.get(i));
+	    	}
 	    }
 	};
 	
@@ -121,14 +128,15 @@ public class Graph extends ObjectManagerFragment {
 	
 	public void onResume() {
 		super.onResume();
-					
-		eegSeries = new GraphViewSeries(new GraphViewData[] { });
-		graphView = new LineGraphView(getActivity(), "EEG Data");  
-		graphView.addSeries(eegSeries);
-		
-
+	
+		// Add graphs to layout
 		LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.eegPlotLayout);
-		layout.addView(graphView);
+		for (int i = 0; i < HistoryTask.CHANNELS; i++) {
+			graphView.add(new LineGraphView(getActivity(), "EEG Data: " + i));
+			
+			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1);
+			layout.addView(graphView.get(i), params);
+		}
 		
 		stopTimer = false;
 		timer = new Thread() {
@@ -165,17 +173,6 @@ public class Graph extends ObjectManagerFragment {
 
 		if (obj == null)
 			return;
-
-		if (obj.getName().compareTo("EEGData") == 0) {
-
-						
-			float SAMPLING_RATE = 200;
-			
-			eegSeries.appendData(new GraphViewData(obj.getField("Sample").getDouble() / SAMPLING_RATE,
-					obj.getField("Data").getDouble(0)),
-					false, 1000);
-					}
-
 	}
 
 	@Override
