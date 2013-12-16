@@ -41,6 +41,7 @@ import org.taulabs.androidgcs.drawer.NavDrawerItem;
 import org.taulabs.androidgcs.drawer.NavMenuActivity;
 import org.taulabs.androidgcs.drawer.NavMenuItem;
 import org.taulabs.androidgcs.drawer.NavMenuSection;
+import org.taulabs.androidgcs.fragments.Graph;
 import org.taulabs.androidgcs.fragments.ObjectManagerFragment;
 import org.taulabs.androidgcs.fragments.PFD;
 import org.taulabs.androidgcs.fragments.Map;
@@ -727,7 +728,7 @@ public abstract class ObjectManagerActivity extends Activity {
 				NavMenuActivity.create(105, "Home Adjustment", "ic_map", HomeAdjustment.class, true, this),
 				NavMenuActivity.create(106, "Browser", "ic_browser", ObjectBrowser.class, true, this),
 				NavMenuActivity.create(107, "Logging", "ic_logging", Logging.class, true, this),
-				//NavMenuActivity.create(108, "Control", "ic_controller", Controller.class, true, this),
+				NavMenuItem.create(108, "Graph", "ic_controller", true, this),
 				NavMenuActivity.create(109, "Tablet Control", "ic_tabletcontrol", TabletControl.class, true, this),
 				NavMenuActivity.create(1010, "OSG", "ic_osg", OsgViewer.class, true, this),
 		};
@@ -769,6 +770,8 @@ public abstract class ObjectManagerActivity extends Activity {
 			return new Map();
 		case 103:
 			return new SystemAlarmsFragment();
+		case 108:
+			return new Graph();
 		}
 		return null;
 	}

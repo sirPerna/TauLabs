@@ -29,7 +29,6 @@ import org.taulabs.androidgcs.fragments.PFD;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.util.Log;
 
 public class MainActivity extends ObjectManagerActivity {
 
