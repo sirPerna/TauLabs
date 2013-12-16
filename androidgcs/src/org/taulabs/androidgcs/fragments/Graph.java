@@ -133,7 +133,11 @@ public class Graph extends ObjectManagerFragment {
 		LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.eegPlotLayout);
 		for (int i = 0; i < HistoryTask.CHANNELS; i++) {
 			graphView.add(new LineGraphView(getActivity(), "EEG Data: " + i));
-			
+			graphView.get(i).setTitle("");
+			graphView.get(i).getGraphViewStyle().setNumVerticalLabels(0);
+			graphView.get(i).getGraphViewStyle().setNumHorizontalLabels(0);
+			graphView.get(i).getGraphViewStyle().setTextSize(0);
+
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1);
 			layout.addView(graphView.get(i), params);
 		}
