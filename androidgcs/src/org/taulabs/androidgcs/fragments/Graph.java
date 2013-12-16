@@ -27,12 +27,20 @@ import org.taulabs.androidgcs.R;
 import org.taulabs.uavtalk.UAVObject;
 import org.taulabs.uavtalk.UAVObjectManager;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.GraphView.GraphViewData;
+import com.jjoe64.graphview.GraphViewSeries;
+import com.jjoe64.graphview.LineGraphView;
+
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class Graph extends ObjectManagerFragment {
@@ -65,14 +73,59 @@ public class Graph extends ObjectManagerFragment {
 
 	}
 	
+	GraphView graphView;
+	GraphViewSeries eegSeries;
+	Thread timer;
+	
+	private Handler uiCallback = new Handler () {
+	    public void handleMessage (Message msg) {
+	    	Log.d(TAG, "Updating graphics");
+	    	graphView.removeAllSeries();
+			graphView.addSeries(eegSeries);
+	    }
+	};
+	
+	public void onResume() {
+		super.onResume();
+					
+		eegSeries = new GraphViewSeries(new GraphViewData[] { });
+		graphView = new LineGraphView(getActivity(), "EEG Data");  
+		graphView.addSeries(eegSeries);
+		
+
+		LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.eegPlotLayout);
+		layout.addView(graphView);
+		
+		timer = new Thread() {
+		    public void run () {
+		        for (;;) {
+		        	uiCallback.sendEmptyMessage(0);
+		            try {
+						Thread.sleep(100); // Update at 10 Hz
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} 
+		        }
+		    }
+		};
+		timer.start();
+	}
+	
+	public void onPause() {
+		super.onPause();
+		timer.destroy();
+	}
+
 	private int missedUpdates;
 	private int lastCounter;
+	private int lastGap;
 
 	/**
 	 * Called whenever any objects subscribed to via registerObjects
 	 */
 	@Override
-	public void objectUpdated(UAVObject obj) {
+	public void objectUpdatedUI(UAVObject obj) {
 		if (DEBUG)
 			Log.d(TAG, "Updated");
 
@@ -82,14 +135,22 @@ public class Graph extends ObjectManagerFragment {
 		if (obj.getName().compareTo("EEGData") == 0) {
 			int counter = (int) obj.getField("Sample").getDouble();
 			
-			if ((counter - lastCounter) > 1)
+			if ((counter - lastCounter) > 1) {
 				missedUpdates++;
+				lastGap = counter - lastCounter;
+			}
 			
 			lastCounter = counter;
 			
 			TextView missedUpdatesView = (TextView) getActivity().findViewById(R.id.missedUpdates);
-			missedUpdatesView.setText(String.valueOf(missedUpdates));
-		}
+			missedUpdatesView.setText(String.valueOf(missedUpdates) + " " + String.valueOf(lastGap));
+			
+			float SAMPLING_RATE = 200;
+			
+			eegSeries.appendData(new GraphViewData(obj.getField("Sample").getDouble() / SAMPLING_RATE,
+					obj.getField("Data").getDouble(0)),
+					false, 1000);
+					}
 
 	}
 
