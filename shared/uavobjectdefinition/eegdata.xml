@@ -1,0 +1,11 @@
+<xml>
+    <object name="EEGData" singleinstance="true" settings="false">
+        <description>EEG Data</description>
+        <field name="Sample" units="" type="int32" elements="1"/>
+        <field name="Data" units="mV" type="float" elements="8"/>
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="false" updatemode="manual" period="0"/>
+        <telemetryflight acked="false" updatemode="onchange" period="0"/>
+        <logging updatemode="manual" period="0"/>
+    </object>
+</xml>

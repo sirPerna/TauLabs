@@ -1,0 +1,10 @@
+<xml>
+    <object name="EEGStatus" singleinstance="true" settings="false">
+        <description>Monitors the status of the EEG system</description>
+        <field name="Recording" units="" type="enum" options="FALSE,TRUE" default="FALSE" elements="1"/>
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="false" updatemode="manual" period="0"/>
+        <telemetryflight acked="false" updatemode="periodic" period="1000"/>
+        <logging updatemode="manual" period="0"/>
+    </object>
+</xml>
