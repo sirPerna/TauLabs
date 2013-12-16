@@ -37,7 +37,7 @@
 #define TASK_PRIORITY (tskIDLE_PRIORITY+1)
 
 // Private types
-#define UPDATE_PERIOD 5 /* 200 Hz */
+#define UPDATE_PERIOD 10 /* 100 Hz */
 
 // Private variables
 static xTaskHandle taskHandle;
@@ -72,7 +72,7 @@ MODULE_INITCALL(EEGInitialize, EEGStart);
  */
 static void EegTask(void *parameters)
 {
-	const float FREQUENCY = 10;
+	const float FREQUENCY = 2;
 	const float SAMPLE_DT = UPDATE_PERIOD / 1000.0f;
 
 	sin_lookup_initialize();
