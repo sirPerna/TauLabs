@@ -37,7 +37,7 @@
 #define TASK_PRIORITY (tskIDLE_PRIORITY+1)
 
 // Private types
-#define UPDATE_PERIOD 10 /* 100 Hz */
+#define UPDATE_PERIOD 5 /* 200 Hz */
 
 // Private variables
 static xTaskHandle taskHandle;
