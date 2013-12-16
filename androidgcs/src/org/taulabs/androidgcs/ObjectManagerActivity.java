@@ -50,6 +50,7 @@ import org.taulabs.androidgcs.telemetry.OPTelemetryService;
 import org.taulabs.androidgcs.telemetry.OPTelemetryService.ConnectionState;
 import org.taulabs.androidgcs.telemetry.OPTelemetryService.LocalBinder;
 import org.taulabs.androidgcs.telemetry.OPTelemetryService.TelemTask;
+import org.taulabs.androidgcs.telemetry.tasks.HistoryTask;
 import org.taulabs.androidgcs.views.AlarmsSummary;
 import org.taulabs.androidgcs.views.AlarmsSummary.AlarmsStatus;
 import org.taulabs.androidgcs.views.TelemetryStats;
@@ -101,6 +102,9 @@ public abstract class ObjectManagerActivity extends Activity {
 	//! Maintain a list of all the UAVObject listeners for this activity
 	private HashMap<Observer, UAVObject> listeners;
 
+	//! Keep a pointer to the history for the activities
+	private HistoryTask history;
+	
 	private DrawerLayout mDrawerLayout;
 	private ActionBarDrawerToggle mDrawerToggle;
 	private ListView mDrawerList;
@@ -309,10 +313,13 @@ public abstract class ObjectManagerActivity extends Activity {
 					if((task = binder.getTelemTask(0)) == null)
 						return;
 					objMngr = task.getObjectManager();
+					history = task.getHistoryTask();
+					
 					onConnected();
 					Log.d(TAG, "Connected()");
 					invalidateOptionsMenu();
 				} else if (intent.getAction().compareTo(OPTelemetryService.INTENT_ACTION_DISCONNECTED) == 0) {
+					history = null;
 					onDisconnected();
 					objMngr = null;
 					Log.d(TAG, "Disonnected()");
@@ -543,6 +550,11 @@ public abstract class ObjectManagerActivity extends Activity {
 			});
 		}
 	};
+	
+	public HistoryTask getHistoryTask() {
+		return history;
+	}
+
 	/*********** Deals with fragments listening for connections ***************/
 
 	/**
@@ -606,6 +618,8 @@ public abstract class ObjectManagerActivity extends Activity {
 				TelemTask task;
 				if((task = binder.getTelemTask(0)) != null) {
 					objMngr = task.getObjectManager();
+					history = task.getHistoryTask();
+					
 					onConnected();
 					invalidateOptionsMenu();
 				}

@@ -50,6 +50,8 @@ public class Graph extends ObjectManagerFragment {
 	// private static boolean WARN = LOGLEVEL > 1;
 	private static final boolean DEBUG = LOGLEVEL > 0;
 
+	private HistoryTask history;
+	
 	// @Override
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,

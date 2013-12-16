@@ -29,9 +29,8 @@ import java.io.OutputStream;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.taulabs.androidgcs.telemetry.tasks.AudioTask;
+import org.taulabs.androidgcs.telemetry.tasks.HistoryTask;
 import org.taulabs.androidgcs.telemetry.tasks.LoggingTask;
-import org.taulabs.androidgcs.telemetry.tasks.TabletInformation;
 import org.taulabs.uavtalk.UAVObjectManager;
 import org.taulabs.uavtalk.UAVTalk;
 import org.taulabs.uavtalk.uavobjects.TelemObjectsInitialize;
@@ -108,11 +107,8 @@ public abstract class TelemetryTask implements Runnable {
 	//! An object which can log the telemetry stream
 	private final LoggingTask logger = new LoggingTask();
 
-	//! Background process to update the TabletInformation object
-	private final TabletInformation tabletInfoTask = new TabletInformation();
-
-	//! Generate audio alerts based on object updates
-	private final AudioTask audioTask = new AudioTask();
+	//! An object which keeps a running history of the EEG
+	private final HistoryTask history = new HistoryTask();
 
 	TelemetryTask(OPTelemetryService s) {
 		telemService = s;
@@ -159,14 +155,11 @@ public abstract class TelemetryTask implements Runnable {
 		// Create a new thread that processes the input bytes
 		startInputProcessing();
 
-		// Connect the tablet information task
-		tabletInfoTask.connect(objMngr, telemService);
-
 		// Connect the logger
 		logger.connect(objMngr, telemService);
 
-		// Connect the audio alerts
-		audioTask.connect(objMngr, telemService);
+		// Connect the history monitor
+		history.connect(objMngr,  telemService);
 
 		connected = true;
 		return connected;
@@ -183,9 +176,8 @@ public abstract class TelemetryTask implements Runnable {
 		shutdown = true;
 
 		// Stop updating the tablet information
-		tabletInfoTask.disconnect();
+		history.disconnect();
 		logger.disconnect();
-		audioTask.disconnect();
 
 		// Shut down all the attached
 		if (mon != null) {
@@ -335,6 +327,12 @@ public abstract class TelemetryTask implements Runnable {
 			public LoggingTask getLoggingTask() {
 				return logger;
 			}
+
+			@Override
+			public HistoryTask getHistoryTask() {
+				return history;
+			}			
+			
 		};
 
 	}
