@@ -27,12 +27,13 @@
 #include "openpilot.h"
 
 #include "physical_constants.h"
+#include "sin_lookup.h"
 
 #include "eegdata.h"
 #include "eegstatus.h"
 
 // Private constants
-#define STACK_SIZE configMINIMAL_STACK_SIZE
+#define STACK_SIZE 1024
 #define TASK_PRIORITY (tskIDLE_PRIORITY+1)
 
 // Private types
@@ -55,8 +56,9 @@ int32_t EEGInitialize()
 int32_t EEGStart()
 {
 	// Start main task
-	xTaskCreate(EegTask, (signed char *)"EEG", STACK_SIZE, NULL, TASK_PRIORITY, &taskHandle);
+	xTaskCreate(EegTask, (signed char *)"EEG", STACK_SIZE/4, NULL, TASK_PRIORITY, &taskHandle);
 
+	// Pretending it is the actuator task for now
 	TaskMonitorAdd(TASKINFO_RUNNING_ACTUATOR, taskHandle);
 	PIOS_WDG_RegisterFlag(PIOS_WDG_ACTUATOR);
 
@@ -71,29 +73,25 @@ MODULE_INITCALL(EEGInitialize, EEGStart);
 static void EegTask(void *parameters)
 {
 	const float FREQUENCY = 10;
+	const float SAMPLE_DT = UPDATE_PERIOD / 1000.0f;
 
-	portTickType lastSysTime;
+	sin_lookup_initialize();
 
 	EEGDataData data;
 	data.Sample = 0;
 
 	// Main task loop
-	lastSysTime = xTaskGetTickCount();
 	while (1) {
 		PIOS_WDG_UpdateFlag(PIOS_WDG_ACTUATOR);
 
 		data.Sample++;
-		data.Data[0] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 0 / 4);
-		data.Data[1] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 1 / 4);
-		data.Data[2] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 2 / 4);
-		data.Data[3] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 3 / 4);
-		data.Data[4] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 4 / 4);
-		data.Data[5] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 5 / 4);
-		data.Data[6] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 6 / 4);
-		data.Data[7] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 7 / 4);
+		float t = data.Sample * SAMPLE_DT;
+
+		for (uint32_t i = 0; i < EEGDATA_DATA_NUMELEM; i++)
+			data.Data[i] = sin_lookup_rad(t * 2 * PI * FREQUENCY + PI * i / 4);
 
 		EEGDataSet(&data);
 
-		vTaskDelayUntil(&lastSysTime, MS2TICKS(UPDATE_PERIOD));
+		vTaskDelay(MS2TICKS(UPDATE_PERIOD));
 	}
 }
