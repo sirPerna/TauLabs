@@ -23,12 +23,15 @@
 
 package org.taulabs.androidgcs.fragments;
 
+import org.taulabs.androidgcs.ObjectManagerActivity;
 import org.taulabs.androidgcs.R;
+import org.taulabs.androidgcs.telemetry.tasks.HistoryTask;
 import org.taulabs.uavtalk.UAVObject;
 import org.taulabs.uavtalk.UAVObjectManager;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.GraphView.GraphViewData;
+import com.jjoe64.graphview.GraphViewDataInterface;
 import com.jjoe64.graphview.GraphViewSeries;
 import com.jjoe64.graphview.LineGraphView;
 
@@ -41,7 +44,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 public class Graph extends ObjectManagerFragment {
 
@@ -66,26 +68,56 @@ public class Graph extends ObjectManagerFragment {
 		if (DEBUG)
 			Log.d(TAG, "On connected");
 
-		UAVObject obj = objMngr.getObject("EEGData");
-		if (obj != null) {
-			registerObjectUpdates(obj);
-			objectUpdated(obj);
+		history = ((ObjectManagerActivity) getActivity()).getHistoryTask();
+		
+		if (history == null)
+			Log.e(TAG, "Error: null history");
+
+		// Create array of data objects which index into the history
+		GraphViewDataInterface eegData[] = new GraphViewDataInterface[HistoryTask.HISTORY_LEN];
+		for (int i = 0; i < HistoryTask.HISTORY_LEN; i++) {
+			eegData[i] = new DataInterface(i);
 		}
-
-
+		
+		// Create a data series consisting of these data interfaces
+		eegSeries = new GraphViewSeries(eegData);
 	}
 	
 	GraphView graphView;
 	GraphViewSeries eegSeries;
 	Thread timer;
 	
+	private class DataInterface implements GraphViewDataInterface {
+
+		int idx;
+		int channel = 0;
+		
+		public DataInterface(int idx) {
+			this.idx = idx;
+		}
+		
+		@Override
+		public double getX() {
+			return history.getT0() + idx / history.getSamplingRate();
+		}
+
+		@Override
+		public double getY() {
+			return history.getHistory()[channel][idx];
+		}
+		
+	}
+	
 	private Handler uiCallback = new Handler () {
 	    public void handleMessage (Message msg) {
-	    	Log.d(TAG, "Updating graphics");
+
+	    	// Force a redraw which will look up the fresh data
 	    	graphView.removeAllSeries();
 			graphView.addSeries(eegSeries);
 	    }
 	};
+	
+	private boolean stopTimer;
 	
 	public void onResume() {
 		super.onResume();
@@ -98,9 +130,10 @@ public class Graph extends ObjectManagerFragment {
 		LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.eegPlotLayout);
 		layout.addView(graphView);
 		
+		stopTimer = false;
 		timer = new Thread() {
 		    public void run () {
-		        for (;;) {
+		        while (!stopTimer) {
 		        	uiCallback.sendEmptyMessage(0);
 		            try {
 						Thread.sleep(100); // Update at 10 Hz
@@ -116,12 +149,11 @@ public class Graph extends ObjectManagerFragment {
 	
 	public void onPause() {
 		super.onPause();
-		timer.destroy();
+		
+		// Tell UI thread to stop updating
+		stopTimer = true;
+		timer.interrupt();
 	}
-
-	private int missedUpdates;
-	private int lastCounter;
-	private int lastGap;
 
 	/**
 	 * Called whenever any objects subscribed to via registerObjects
@@ -135,18 +167,8 @@ public class Graph extends ObjectManagerFragment {
 			return;
 
 		if (obj.getName().compareTo("EEGData") == 0) {
-			int counter = (int) obj.getField("Sample").getDouble();
-			
-			if ((counter - lastCounter) > 1) {
-				missedUpdates++;
-				lastGap = counter - lastCounter;
-			}
-			
-			lastCounter = counter;
-			
-			TextView missedUpdatesView = (TextView) getActivity().findViewById(R.id.missedUpdates);
-			missedUpdatesView.setText(String.valueOf(missedUpdates) + " " + String.valueOf(lastGap));
-			
+
+						
 			float SAMPLING_RATE = 200;
 			
 			eegSeries.appendData(new GraphViewData(obj.getField("Sample").getDouble() / SAMPLING_RATE,
