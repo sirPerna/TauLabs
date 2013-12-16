@@ -842,41 +842,13 @@ void PIOS_Board_Init(void) {
 	pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_GCS] = pios_gcsrcvr_rcvr_id;
 #endif	/* PIOS_INCLUDE_GCSRCVR */
 
-	uint8_t hw_outport;
 	uint8_t number_of_pwm_outputs;
 	uint8_t number_of_adc_ports;
 	bool use_pwm_in;
-	HwSparkyOutPortGet(&hw_outport);
-	switch (hw_outport) {
-	case HWSPARKY_OUTPORT_PWM10:
-		number_of_pwm_outputs = 10;
-		number_of_adc_ports = 0;
-		use_pwm_in = false;
-		break;
-	case HWSPARKY_OUTPORT_PWM82ADC:
-		number_of_pwm_outputs = 8;
-		number_of_adc_ports = 2;
-		use_pwm_in = false;
-		break;
-	case HWSPARKY_OUTPORT_PWM73ADC:
-		number_of_pwm_outputs = 7;
-		number_of_adc_ports = 3;
-		use_pwm_in = false;
-		break;
-	case HWSPARKY_OUTPORT_PWM9PWM_IN:
-		number_of_pwm_outputs = 9;
-		use_pwm_in = true;
-		number_of_adc_ports = 0;
-		break;
-	case HWSPARKY_OUTPORT_PWM7PWM_IN2ADC:
-		number_of_pwm_outputs = 7;
-		use_pwm_in = true;
-		number_of_adc_ports = 2;
-		break;
-	default:
-		PIOS_Assert(0);
-		break;
-	}
+
+	number_of_pwm_outputs = 7;
+	number_of_adc_ports = 3;
+	use_pwm_in = false;
 #ifndef PIOS_DEBUG_ENABLE_DEBUG_PINS
 #ifdef PIOS_INCLUDE_SERVO
 	pios_servo_cfg.num_channels = number_of_pwm_outputs;

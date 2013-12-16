@@ -86,9 +86,10 @@ static void EegTask(void *parameters)
 
 		data.Sample++;
 		float t = data.Sample * SAMPLE_DT;
+		float analog = PIOS_ADC_GetChannelVolt(0) / 10.0f;
 
 		for (uint32_t i = 0; i < EEGDATA_DATA_NUMELEM; i++)
-			data.Data[i] = sin_lookup_rad(t * 2 * PI * FREQUENCY + PI * i / 4);
+			data.Data[i] = sin_lookup_rad(t * 2 * PI * FREQUENCY + PI * i / 4) + analog;
 
 		EEGDataSet(&data);
 
