@@ -26,6 +26,11 @@
 
 #include "openpilot.h"
 
+#include "physical_constants.h"
+
+#include "eegdata.h"
+#include "eegstatus.h"
+
 // Private constants
 #define STACK_SIZE configMINIMAL_STACK_SIZE
 #define TASK_PRIORITY (tskIDLE_PRIORITY+1)
@@ -41,6 +46,9 @@ static void EegTask(void *parameters);
 
 int32_t EEGInitialize()
 {
+	EEGDataInitialize();
+	EEGStatusInitialize();
+
 	return 0;
 }
 
@@ -62,13 +70,29 @@ MODULE_INITCALL(EEGInitialize, EEGStart);
  */
 static void EegTask(void *parameters)
 {
+	const float FREQUENCY = 10;
+
 	portTickType lastSysTime;
+
+	EEGDataData data;
+	data.Sample = 0;
 
 	// Main task loop
 	lastSysTime = xTaskGetTickCount();
 	while (1) {
 		PIOS_WDG_UpdateFlag(PIOS_WDG_ACTUATOR);
 
+		data.Sample++;
+		data.Data[0] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 0 / 4);
+		data.Data[1] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 1 / 4);
+		data.Data[2] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 2 / 4);
+		data.Data[3] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 3 / 4);
+		data.Data[4] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 4 / 4);
+		data.Data[5] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 5 / 4);
+		data.Data[6] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 6 / 4);
+		data.Data[7] = sinf(data.Sample / 200.f * 2 * PI * FREQUENCY + PI * 7 / 4);
+
+		EEGDataSet(&data);
 
 		vTaskDelayUntil(&lastSysTime, MS2TICKS(UPDATE_PERIOD));
 	}
