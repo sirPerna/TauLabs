@@ -58,6 +58,18 @@ public class Spectrum extends ObjectManagerFragment {
 	private ArrayList <GraphView> graphView = new ArrayList<GraphView>();
 	private ArrayList <GraphViewSeries> eegSeries = new ArrayList <GraphViewSeries>();
 
+	public void onCreate (Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		for (int i = 0; i < HistoryTask.CHANNELS; i++) {
+			graphView.add(new LineGraphView(getActivity(), "EEG Data: " + i));
+			graphView.get(i).setTitle("");
+			graphView.get(i).getGraphViewStyle().setNumVerticalLabels(0);
+			graphView.get(i).getGraphViewStyle().setNumHorizontalLabels(0);
+			graphView.get(i).getGraphViewStyle().setTextSize(0);
+		}
+	}
+
 	// @Override
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -87,6 +99,7 @@ public class Spectrum extends ObjectManagerFragment {
 			
 			// Create a data series consisting of these data interfaces
 			eegSeries.add(new GraphViewSeries(eegData[i]));
+			graphView.get(i).addSeries(eegSeries.get(i));
 		}
 	}
 		
@@ -105,7 +118,12 @@ public class Spectrum extends ObjectManagerFragment {
 		
 		@Override
 		public double getX() {
-			return idx;
+			double logf;
+			if (idx == 0)
+				logf = 0;
+			else
+				logf = Math.log10(idx);
+			return logf;
 		}
 
 		@Override
@@ -134,12 +152,6 @@ public class Spectrum extends ObjectManagerFragment {
 		// Add graphs to layout
 		LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.eegPlotLayout);
 		for (int i = 0; i < HistoryTask.CHANNELS; i++) {
-			graphView.add(new LineGraphView(getActivity(), "EEG Data: " + i));
-			graphView.get(i).setTitle("");
-			graphView.get(i).getGraphViewStyle().setNumVerticalLabels(0);
-			graphView.get(i).getGraphViewStyle().setNumHorizontalLabels(0);
-			graphView.get(i).getGraphViewStyle().setTextSize(0);
-
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1);
 			layout.addView(graphView.get(i), params);
 		}
