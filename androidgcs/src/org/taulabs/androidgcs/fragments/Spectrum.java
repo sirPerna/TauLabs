@@ -78,10 +78,10 @@ public class Spectrum extends ObjectManagerFragment {
 			Log.e(TAG, "Error: null history");
 
 		// Create array of data objects which index into the history
-		GraphViewDataInterface eegData[][] = new GraphViewDataInterface[HistoryTask.CHANNELS][HistoryTask.HISTORY_LEN];
+		GraphViewDataInterface eegData[][] = new GraphViewDataInterface[HistoryTask.CHANNELS][HistoryTask.HISTORY_LEN / 2];
 		for (int i = 0; i < HistoryTask.CHANNELS; i++) {
 			// Only plot positive half of spectrum
-			for (int j = 0; j < HistoryTask.HISTORY_LEN; j++) {
+			for (int j = 0; j < HistoryTask.HISTORY_LEN / 2; j++) {
 				eegData[i][j] = new DataInterface(i,j);
 			}
 			
