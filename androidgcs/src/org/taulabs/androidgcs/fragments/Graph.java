@@ -32,7 +32,6 @@ import org.taulabs.uavtalk.UAVObject;
 import org.taulabs.uavtalk.UAVObjectManager;
 
 import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.GraphView.GraphViewData;
 import com.jjoe64.graphview.GraphViewDataInterface;
 import com.jjoe64.graphview.GraphViewSeries;
 import com.jjoe64.graphview.LineGraphView;
@@ -87,6 +86,7 @@ public class Graph extends ObjectManagerFragment {
 			
 			// Create a data series consisting of these data interfaces
 			eegSeries.add(new GraphViewSeries(eegData[i]));
+			graphView.get(i).addSeries(eegSeries.get(i));
 		}
 	}
 		
@@ -118,26 +118,31 @@ public class Graph extends ObjectManagerFragment {
 
 	    	// Force a redraw which will look up the fresh data
 	    	for (int i = 0; i < HistoryTask.CHANNELS; i++) {
-	    		graphView.get(i).removeAllSeries();
-	    		graphView.get(i).addSeries(eegSeries.get(i));
+	    		graphView.get(i).redrawAll();
 	    	}
 	    }
 	};
 	
 	private boolean stopTimer;
-	
-	public void onResume() {
-		super.onResume();
-	
-		// Add graphs to layout
-		LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.eegPlotLayout);
+
+	public void onCreate (Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
 		for (int i = 0; i < HistoryTask.CHANNELS; i++) {
 			graphView.add(new LineGraphView(getActivity(), "EEG Data: " + i));
 			graphView.get(i).setTitle("");
 			graphView.get(i).getGraphViewStyle().setNumVerticalLabels(0);
 			graphView.get(i).getGraphViewStyle().setNumHorizontalLabels(0);
 			graphView.get(i).getGraphViewStyle().setTextSize(0);
+		}
+	}
 
+	public void onResume() {
+		super.onResume();
+	
+		// Add graphs to layout
+		LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.eegPlotLayout);
+		for (int i = 0; i < HistoryTask.CHANNELS; i++) {
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1);
 			layout.addView(graphView.get(i), params);
 		}
