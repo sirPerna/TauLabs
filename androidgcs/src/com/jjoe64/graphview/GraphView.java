@@ -52,7 +52,7 @@ import com.jjoe64.graphview.compatible.ScaleGestureDetector;
  */
 abstract public class GraphView extends LinearLayout {
 	static final private class GraphViewConfig {
-		static final float BORDER = 20;
+		static final float BORDER = 5;
 	}
 
 	private class GraphViewContentView extends View {
@@ -111,18 +111,19 @@ abstract public class GraphView extends LinearLayout {
 			}
 
 			// vertical lines
-			paint.setTextAlign(Align.LEFT);
+			/*paint.setTextAlign(Align.LEFT);
 			int vers = verlabels.length - 1;
 			for (int i = 0; i < verlabels.length; i++) {
 				paint.setColor(graphViewStyle.getGridColor());
 				float y = ((graphheight / vers) * i) + border;
 				canvas.drawLine(horstart, y, width, y, paint);
-			}
+			}*/
 
-			drawHorizontalLabels(canvas, border, horstart, height, horlabels, graphwidth);
+			if (false)
+				drawHorizontalLabels(canvas, border, horstart, height, horlabels, graphwidth);
 
-			paint.setTextAlign(Align.CENTER);
-			canvas.drawText(title, (graphwidth / 2) + horstart, border - 4, paint);
+			//paint.setTextAlign(Align.CENTER);
+			//canvas.drawText(title, (graphwidth / 2) + horstart, border - 4, paint);
 
 			if (maxY == minY) {
 				// if min/max is the same, fake it so that we can render a line
@@ -163,7 +164,6 @@ abstract public class GraphView extends LinearLayout {
 				// labels have to be regenerated
 				if (!staticHorizontalLabels) horlabels = null;
 				if (!staticVerticalLabels) verlabels = null;
-				viewVerLabels.invalidate();
 			}
 			invalidate();
 		}
@@ -315,7 +315,6 @@ abstract public class GraphView extends LinearLayout {
 	private boolean disableTouch;
 	private double viewportStart;
 	private double viewportSize;
-	private final View viewVerLabels;
 	private ScaleGestureDetector scaleDetector;
 	private boolean scalable;
 	private final NumberFormat[] numberformatter = new NumberFormat[2];
@@ -362,8 +361,6 @@ abstract public class GraphView extends LinearLayout {
 		paint = new Paint();
 		graphSeries = new ArrayList<GraphViewSeries>();
 
-		viewVerLabels = new VerLabelsView(context);
-		addView(viewVerLabels);
 		graphViewContentView = new GraphViewContentView(context);
 		addView(graphViewContentView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
 	}
@@ -712,7 +709,6 @@ abstract public class GraphView extends LinearLayout {
 		verLabelTextWidth = null;
 
 		invalidate();
-		viewVerLabels.invalidate();
 		graphViewContentView.invalidate();
 	}
 
@@ -766,7 +762,6 @@ abstract public class GraphView extends LinearLayout {
 		if (!staticHorizontalLabels) horlabels = null;
 
 		invalidate();
-		viewVerLabels.invalidate();
 		graphViewContentView.invalidate();
 	}
 
