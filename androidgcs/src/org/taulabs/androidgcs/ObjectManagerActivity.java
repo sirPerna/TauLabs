@@ -45,6 +45,7 @@ import org.taulabs.androidgcs.fragments.Graph;
 import org.taulabs.androidgcs.fragments.ObjectManagerFragment;
 import org.taulabs.androidgcs.fragments.PFD;
 import org.taulabs.androidgcs.fragments.Map;
+import org.taulabs.androidgcs.fragments.Spectrogram;
 import org.taulabs.androidgcs.fragments.Spectrum;
 import org.taulabs.androidgcs.fragments.SystemAlarmsFragment;
 import org.taulabs.androidgcs.telemetry.OPTelemetryService;
@@ -743,6 +744,7 @@ public abstract class ObjectManagerActivity extends Activity {
 				NavMenuActivity.create(107, "Logging", "ic_logging", Logging.class, true, this),
 				NavMenuItem.create(108, "Graph", "ic_controller", true, this),
 				NavMenuItem.create(109, "Spectrum", "ic_controller", true, this),
+				NavMenuItem.create(110, "Spectrogram", "ic_controller", true, this),
 		};
 
 		navDrawerActivityConfiguration.setNavItems(menu);
@@ -786,6 +788,8 @@ public abstract class ObjectManagerActivity extends Activity {
 			return new Graph();
 		case 109:
 			return new Spectrum();
+		case 110:
+			return new Spectrogram();
 		}
 		return null;
 	}
