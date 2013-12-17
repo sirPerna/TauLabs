@@ -45,6 +45,7 @@ import org.taulabs.androidgcs.fragments.Graph;
 import org.taulabs.androidgcs.fragments.ObjectManagerFragment;
 import org.taulabs.androidgcs.fragments.PFD;
 import org.taulabs.androidgcs.fragments.Map;
+import org.taulabs.androidgcs.fragments.Spectrum;
 import org.taulabs.androidgcs.fragments.SystemAlarmsFragment;
 import org.taulabs.androidgcs.telemetry.OPTelemetryService;
 import org.taulabs.androidgcs.telemetry.OPTelemetryService.ConnectionState;
@@ -743,7 +744,7 @@ public abstract class ObjectManagerActivity extends Activity {
 				NavMenuActivity.create(106, "Browser", "ic_browser", ObjectBrowser.class, true, this),
 				NavMenuActivity.create(107, "Logging", "ic_logging", Logging.class, true, this),
 				NavMenuItem.create(108, "Graph", "ic_controller", true, this),
-				NavMenuActivity.create(109, "Tablet Control", "ic_tabletcontrol", TabletControl.class, true, this),
+				NavMenuItem.create(109, "Spectrum", "ic_controller", true, this),
 				NavMenuActivity.create(1010, "OSG", "ic_osg", OsgViewer.class, true, this),
 		};
 
@@ -786,6 +787,8 @@ public abstract class ObjectManagerActivity extends Activity {
 			return new SystemAlarmsFragment();
 		case 108:
 			return new Graph();
+		case 109:
+			return new Spectrum();
 		}
 		return null;
 	}

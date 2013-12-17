@@ -41,7 +41,7 @@ public class HistoryTask implements ITelemTask {
 	private UAVObjectManager objMngr;
 	private UAVObject eegDataObject; 
 	
-	public final static int HISTORY_LEN = 1000;
+	public final static int HISTORY_LEN = 1024;
 	public final static int CHANNELS    = 8;
 
 	private float history[][] = new float[CHANNELS][HISTORY_LEN];
