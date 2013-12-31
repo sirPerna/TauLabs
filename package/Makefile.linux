@@ -40,7 +40,7 @@ ALL_DEB_FILES += $(foreach f, $(DEB_MACHINE_FILES), $(DEB_BUILD_DIR)/$(f))
 
 DEB_PACKAGE_NAME	:= taulabs_$(VERSION_FULL)_$(DEB_PLATFORM)
 
-linux_deb_package: deb_build gcs
+linux_deb_package: deb_build gcs_bundle
 	@echo $@ starting
 	cd .. && dpkg-buildpackage -b -us -uc
 	$(V1)mv $(ROOT_DIR)/../$(DEB_PACKAGE_NAME).deb $(BUILD_DIR)
@@ -65,6 +65,16 @@ $(foreach cpfile, $(DEB_MACHINE_FILES), $(eval $(call CP_DEB_FILES_TEMPLATE,$(cp
 gcs: uavobjects_gcs
 	@echo "Linux Package Make of GCS."
 	$(V1) $(MAKE) -C $(ROOT_DIR) GCS_BUILD_CONF=release $@
+
+gcs_bundle: gcs
+    ( \
+      ROOT_DIR="$(ROOT_DIR)" \
+      BUILD_DIR="$(BUILD_DIR)" \
+      PACKAGE_LBL="$(PACKAGE_LBL)" \
+      PACKAGE_DIR="$(PACKAGE_DIR)" \
+      FW_DIR="$(FW_DIR)" \
+      "$(ROOT_DIR)/package/linux/package" \
+    )
 
 identify:
 	@echo ""

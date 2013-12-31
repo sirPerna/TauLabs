@@ -1,0 +1,6 @@
+# Script to package linux distributable with libraries
+#
+# This puts the Qt5 libraries with the linux distributable
+# into a directory and makes sure the application can be
+# run standalone from that directory
+
