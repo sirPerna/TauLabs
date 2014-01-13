@@ -34,7 +34,7 @@
 
 #if defined(PIOS_INCLUDE_ADS1299)
 #include "pios_ads1299.h"
- 
+
 /* Global Variables */
 
 enum pios_ads1299_dev_magic {
@@ -66,6 +66,7 @@ static int32_t PIOS_ADS1299_ClaimBus();
 static int32_t PIOS_ADS1299_ReleaseBus();
 static int32_t PIOS_ADS1299_SetReg(uint8_t address, uint8_t buffer);
 static int32_t PIOS_ADS1299_GetReg(uint8_t address);
+static int32_t PIOS_ADS1299_ReadID();
 
 /**
  * @brief Allocate a new device
@@ -125,6 +126,10 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	pios_ads1299_dev->slave_num = slave_num;
 	pios_ads1299_dev->cfg = cfg;
 
+	// TODO:
+	// 1. Enable the power line
+	// 2. Trigger a reset
+
 	if (false) {
 		/* Set up EXTI line */
 		PIOS_EXTI_Init(cfg->exti_cfg);
@@ -132,6 +137,11 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 		PIOS_ADS1299_SetReg(0,0);
 		PIOS_ADS1299_GetReg(0);
 	}
+
+	if ((PIOS_ADS1299_ReadID() & 0x1F) == 0b00011110)
+		return 0;
+	else
+		return -1;
 
 	//PIOS_SENSORS_Register(PIOS_SENSOR_GYRO, pios_mpu6000_dev->gyro_queue);
 
@@ -212,7 +222,8 @@ static int32_t PIOS_ADS1299_GetReg(uint8_t reg)
 	if (PIOS_ADS1299_ClaimBus() != 0)
 		return -1;
 
-	PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, (0x80 | reg)); // request byte
+	PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, (0x20 | reg)); // set the register address
+	PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, 0);            // request one byte
 	data = PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, 0);     // receive response
 
 	PIOS_ADS1299_ReleaseBus();
@@ -232,19 +243,24 @@ static int32_t PIOS_ADS1299_SetReg(uint8_t reg, uint8_t data)
 	if (PIOS_ADS1299_ClaimBus() != 0)
 		return -1;
 
-	if (PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, 0x7f & reg) != 0) {
-		PIOS_ADS1299_ReleaseBus();
-		return -2;
-	}
-
-	if (PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, data) != 0) {
-		PIOS_ADS1299_ReleaseBus();
-		return -3;
-	}
+	PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, 0x4 | reg);   // set the register address and write mode
+	PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, 0);           // write one byte
+	PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, data);
 
 	PIOS_ADS1299_ReleaseBus();
 
 	return 0;
+}
+
+/**
+ * Read the ADS1299 device ID
+ * @return id or < 0 if unsuccessful
+ */
+static int32_t PIOS_ADS1299_ReadID()
+{
+	uint32_t id = PIOS_ADS1299_GetReg(0);
+
+	return id;
 }
 
 /**

@@ -171,9 +171,8 @@ uintptr_t pios_waypoints_settings_fs_id;
  * 1 pulse - MPU9150 - no irq
  * 2 pulses - MPU9150 - failed configuration or task starting
  * 3 pulses - internal I2C bus locked
- * 4 pulses - external I2C bus locked
+ * 4 pulses - ADS1299 not responding
  * 5 pulses - flash
- * 6 pulses - CAN
  */
 void panic(int32_t code) {
 	while(1){
@@ -222,7 +221,8 @@ void PIOS_Board_Init(void) {
 		PIOS_DEBUG_Assert(0);
 	}
 
-	PIOS_ADS1299_Init(pios_spi_internal_id, 0, &pios_ads1299_cfg);
+	if (PIOS_ADS1299_Init(pios_spi_internal_id, 0, &pios_ads1299_cfg) != 0)
+		panic(4);
 #endif
 
 #if defined(PIOS_INCLUDE_I2C)
