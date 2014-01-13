@@ -184,12 +184,9 @@ uintptr_t pios_com_telem_usb_id;
 uintptr_t pios_com_telem_rf_id;
 uintptr_t pios_com_vcp_id;
 uintptr_t pios_com_bridge_id;
-uintptr_t pios_com_can_id;
 
 uintptr_t pios_uavo_settings_fs_id;
 uintptr_t pios_waypoints_settings_fs_id;
-
-uintptr_t pios_can_id;
 
 
 /**
@@ -247,22 +244,6 @@ void PIOS_Board_Init(void) {
 	}
 	if (PIOS_I2C_CheckClear(pios_i2c_internal_id) != 0)
 		panic(3);
-#endif
-
-#if defined(PIOS_INCLUDE_CAN)
-	if (PIOS_CAN_Init(&pios_can_id, &pios_can_cfg) != 0)
-		panic(6);
-
-	uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_CAN_RX_BUF_LEN);
-	uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_CAN_TX_BUF_LEN);
-	PIOS_Assert(rx_buffer);
-	PIOS_Assert(tx_buffer);
-	if (PIOS_COM_Init(&pios_com_can_id, &pios_can_com_driver, pios_can_id,
-	                  rx_buffer, PIOS_COM_CAN_RX_BUF_LEN,
-	                  tx_buffer, PIOS_COM_CAN_TX_BUF_LEN))
-		panic(6);
-
-	pios_com_bridge_id = pios_com_can_id;
 #endif
 
 #if defined(PIOS_INCLUDE_FLASH)
