@@ -44,29 +44,16 @@
 #include "manualcontrolsettings.h"
 #include "modulesettings.h"
 
-/**
- * Configuration for the MS5611 chip
- */
-#if defined(PIOS_INCLUDE_MS5611)
-#include "pios_ms5611_priv.h"
-static const struct pios_ms5611_cfg pios_ms5611_cfg = {
-	.oversampling = MS5611_OSR_4096,
-	.temperature_interleaving = 1,
-};
-#endif /* PIOS_INCLUDE_MS5611 */
+#if defined(PIOS_INCLUDE_ADS1299)
+#include "pios_ads1299.h"
 
-/**
- * Configuration for the MPU6050 chip
- */
-#if defined(PIOS_INCLUDE_MPU6050)
-#include "pios_mpu6050.h"
-static const struct pios_exti_cfg pios_exti_mpu6050_cfg __exti_config = {
-	.vector = PIOS_MPU6050_IRQHandler,
-	.line = EXTI_Line15,
+static const struct pios_exti_cfg pios_exti_ads1299_cfg __exti_config = {
+	.vector = PIOS_ADS1299_IRQHandler,
+	.line = EXTI_Line3,
 	.pin = {
 		.gpio = GPIOA,
 		.init = {
-			.GPIO_Pin = GPIO_Pin_15,
+			.GPIO_Pin = GPIO_Pin_3,
 			.GPIO_Speed = GPIO_Speed_50MHz,
 			.GPIO_Mode = GPIO_Mode_IN,
 			.GPIO_OType = GPIO_OType_OD,
@@ -75,7 +62,7 @@ static const struct pios_exti_cfg pios_exti_mpu6050_cfg __exti_config = {
 	},
 	.irq = {
 		.init = {
-			.NVIC_IRQChannel = EXTI15_10_IRQn,
+			.NVIC_IRQChannel = EXTI3_IRQn,
 			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID,
 			.NVIC_IRQChannelSubPriority = 0,
 			.NVIC_IRQChannelCmd = ENABLE,
@@ -83,7 +70,7 @@ static const struct pios_exti_cfg pios_exti_mpu6050_cfg __exti_config = {
 	},
 	.exti = {
 		.init = {
-			.EXTI_Line = EXTI_Line15, // matches above GPIO pin
+			.EXTI_Line = EXTI_Line3, // matches above GPIO pin
 			.EXTI_Mode = EXTI_Mode_Interrupt,
 			.EXTI_Trigger = EXTI_Trigger_Rising,
 			.EXTI_LineCmd = ENABLE,
@@ -91,17 +78,10 @@ static const struct pios_exti_cfg pios_exti_mpu6050_cfg __exti_config = {
 	},
 };
 
-static const struct pios_mpu60x0_cfg pios_mpu6050_cfg = {
-	.exti_cfg = &pios_exti_mpu6050_cfg,
-	.default_samplerate = 500,
-	.interrupt_cfg = PIOS_MPU60X0_INT_CLR_ANYRD,
-	.interrupt_en = PIOS_MPU60X0_INTEN_DATA_RDY,
-	.User_ctl = 0,
-	.Pwr_mgmt_clk = PIOS_MPU60X0_PWRMGMT_PLL_Z_CLK,
-	.default_filter = PIOS_MPU60X0_LOWPASS_256_HZ,
-	.orientation = PIOS_MPU60X0_TOP_180DEG
+const struct pios_ads1299_cfg pios_ads1299_cfg = {
+	.exti_cfg = &pios_exti_ads1299_cfg,
 };
-#endif /* PIOS_INCLUDE_MPU6050 */
+#endif /* PIOS_INCLUDE_ADS1299 */
 
 /**
  * Configuration for the MPU9150 chip
@@ -164,9 +144,6 @@ uintptr_t pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE];
 
 #define PIOS_COM_TELEM_USB_RX_BUF_LEN 65
 #define PIOS_COM_TELEM_USB_TX_BUF_LEN 65
-
-#define PIOS_COM_CAN_RX_BUF_LEN 256
-#define PIOS_COM_CAN_TX_BUF_LEN 256
 
 #define PIOS_COM_BRIDGE_RX_BUF_LEN 65
 #define PIOS_COM_BRIDGE_TX_BUF_LEN 12
@@ -237,6 +214,16 @@ void PIOS_Board_Init(void) {
 	PIOS_Assert(led_cfg);
 	PIOS_LED_Init(led_cfg);
 #endif	/* PIOS_INCLUDE_LED */
+
+#if defined(PIOS_INCLUDE_SPI)
+	uint32_t pios_spi_internal_id;
+
+	if (PIOS_SPI_Init(&pios_spi_internal_id, &pios_spi_eeg_cfg)) {
+		PIOS_DEBUG_Assert(0);
+	}
+
+	PIOS_ADS1299_Init(pios_spi_internal_id, 0, &pios_ads1299_cfg);
+#endif
 
 #if defined(PIOS_INCLUDE_I2C)
 	if (PIOS_I2C_Init(&pios_i2c_internal_id, &pios_i2c_internal_cfg)) {

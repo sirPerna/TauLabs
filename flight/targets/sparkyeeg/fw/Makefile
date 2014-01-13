@@ -101,8 +101,8 @@ include $(PIOS)/STM32F30x/library_fw.mk
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_delay.c
+SRC += $(PIOSCOMMON)/pios_ads1299.c
 SRC += $(PIOSCOMMON)/pios_mpu9150.c
-SRC += $(PIOSCOMMON)/pios_ms5611.c
 SRC += $(PIOSCOMMON)/pios_crc.c
 SRC += $(PIOSCOMMON)/pios_com.c
 SRC += $(PIOSCOMMON)/pios_rcvr.c
