@@ -237,8 +237,6 @@ void PIOS_Board_Init(void) {
 #endif	/* PIOS_INCLUDE_LED */
 
 #if defined(PIOS_INCLUDE_SPI)
-	uint32_t pios_spi_internal_id;
-
 	if (PIOS_SPI_Init(&pios_spi_internal_id, &pios_spi_eeg_cfg)) {
 		PIOS_DEBUG_Assert(0);
 	}

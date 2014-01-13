@@ -248,7 +248,7 @@ static int32_t PIOS_ADS1299_SetReg(uint8_t reg, uint8_t data)
 	if (PIOS_ADS1299_ClaimBus() != 0)
 		return -1;
 
-	PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, 0x4 | reg);   // set the register address and write mode
+	PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, 0x40 | reg);  // set the register address and write mode
 	PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, 0);           // write one byte
 	PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, data);
 

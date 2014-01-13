@@ -330,7 +330,7 @@ const struct pios_flash_partition * PIOS_BOARD_HW_DEFS_GetPartitionTable (uint32
  *      - Used for ADS1299 communications
  */
 void PIOS_SPI_eeg_irq_handler(void);
-void DMA1_Stream3_IRQHandler(void) __attribute__((alias("PIOS_SPI_eeg_irq_handler")));
+void SPI1_IRQHandler(void) __attribute__((alias("PIOS_SPI_eeg_irq_handler")));
 static const struct pios_spi_cfg pios_spi_eeg_cfg = {
 	.regs = SPI1,
 	.remap = GPIO_AF_5,
@@ -389,15 +389,16 @@ static const struct pios_spi_cfg pios_spi_eeg_cfg = {
 			.GPIO_OType = GPIO_OType_PP,
 			.GPIO_PuPd = GPIO_PuPd_UP
 		},
+		.pin_source = GPIO_PinSource4,
 	} },
 };
 
 
-uint32_t pios_spi_ads1299_id;
+uint32_t pios_spi_internal_id;
 void PIOS_SPI_eeg_irq_handler(void)
 {
 	/* Call into the generic code to handle the IRQ for this specific device */
-	PIOS_SPI_IRQ_Handler(pios_spi_ads1299_id);
+	PIOS_SPI_IRQ_Handler(pios_spi_internal_id);
 }
 
 #endif /* PIOS_INCLUDE_SPI */
