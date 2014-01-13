@@ -89,7 +89,6 @@ const struct pios_ads1299_cfg pios_ads1299_cfg = {
 			.GPIO_OType = GPIO_OType_PP,
 			.GPIO_PuPd = GPIO_PuPd_NOPULL
 		},
-		.pin_source = GPIO_PinSource11,
 	},
 	.reset = {
 		.gpio = GPIOB,
@@ -100,7 +99,16 @@ const struct pios_ads1299_cfg pios_ads1299_cfg = {
 			.GPIO_OType = GPIO_OType_PP,
 			.GPIO_PuPd = GPIO_PuPd_NOPULL
 		},
-		.pin_source = GPIO_PinSource10,
+	},
+	.start = {
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin = GPIO_Pin_2,
+			.GPIO_Speed = GPIO_Speed_50MHz,
+			.GPIO_Mode  = GPIO_Mode_OUT,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd = GPIO_PuPd_NOPULL
+		},
 	},
 };
 #endif /* PIOS_INCLUDE_ADS1299 */

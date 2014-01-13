@@ -126,14 +126,25 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	pios_ads1299_dev->slave_num = slave_num;
 	pios_ads1299_dev->cfg = cfg;
 
-	// TODO:
 	// 1. Enable the power line
 	// 2. Trigger a reset
 	GPIO_Init(cfg->pwdn.gpio, (GPIO_InitTypeDef*)&cfg->pwdn.init);
 	GPIO_Init(cfg->reset.gpio, (GPIO_InitTypeDef*)&cfg->reset.init);
+	GPIO_Init(cfg->start.gpio, (GPIO_InitTypeDef*)&cfg->start.init);
 
+	GPIO_ResetBits(cfg->start.gpio, cfg->start.init.GPIO_Pin);
+	GPIO_ResetBits(cfg->reset.gpio, cfg->reset.init.GPIO_Pin);
+	GPIO_ResetBits(cfg->pwdn.gpio, cfg->pwdn.init.GPIO_Pin);
+
+	PIOS_DELAY_WaitmS(10);
+	
 	GPIO_SetBits(cfg->pwdn.gpio, cfg->pwdn.init.GPIO_Pin);
 	GPIO_SetBits(cfg->reset.gpio, cfg->reset.init.GPIO_Pin);
+	PIOS_DELAY_WaitmS(5);
+	GPIO_ResetBits(cfg->reset.gpio, cfg->reset.init.GPIO_Pin);
+	PIOS_DELAY_WaitmS(5);
+	GPIO_SetBits(cfg->reset.gpio, cfg->reset.init.GPIO_Pin);
+
 
 	if (false) {
 		/* Set up EXTI line */

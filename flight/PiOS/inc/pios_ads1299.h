@@ -38,6 +38,7 @@ struct pios_ads1299_cfg {
 	const struct pios_exti_cfg *exti_cfg; /* Pointer to the EXTI configuration */
 	struct stm32_gpio pwdn;
 	struct stm32_gpio reset;
+	struct stm32_gpio start;	
 };
 
 /* Public Functions */
