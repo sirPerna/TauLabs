@@ -80,6 +80,28 @@ static const struct pios_exti_cfg pios_exti_ads1299_cfg __exti_config = {
 
 const struct pios_ads1299_cfg pios_ads1299_cfg = {
 	.exti_cfg = &pios_exti_ads1299_cfg,
+	.pwdn = {
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin = GPIO_Pin_11,
+			.GPIO_Speed = GPIO_Speed_50MHz,
+			.GPIO_Mode  = GPIO_Mode_OUT,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd = GPIO_PuPd_NOPULL
+		},
+		.pin_source = GPIO_PinSource11,
+	},
+	.reset = {
+		.gpio = GPIOB,
+		.init = {
+			.GPIO_Pin = GPIO_Pin_10,
+			.GPIO_Speed = GPIO_Speed_50MHz,
+			.GPIO_Mode  = GPIO_Mode_OUT,
+			.GPIO_OType = GPIO_OType_PP,
+			.GPIO_PuPd = GPIO_PuPd_NOPULL
+		},
+		.pin_source = GPIO_PinSource10,
+	},
 };
 #endif /* PIOS_INCLUDE_ADS1299 */
 
