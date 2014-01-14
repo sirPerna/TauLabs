@@ -70,35 +70,6 @@ int32_t EEGStart()
 MODULE_INITCALL(EEGInitialize, EEGStart);
 
 /**
- * Determine input/output com port as highest priority available 
- */
-static uintptr_t getComPort() {
-#if defined(PIOS_INCLUDE_USB)
-	if ( PIOS_COM_Available(PIOS_COM_TELEM_USB) )
-		return PIOS_COM_TELEM_USB;
-	else
-#endif /* PIOS_INCLUDE_USB */
-		if ( PIOS_COM_Available(PIOS_COM_TELEM_RF) )
-			return PIOS_COM_TELEM_RF;
-		else
-			return 0;
-}
-
-/**
- * Transmit data buffer to the modem or USB port.
- * \param[in] data Data buffer to send
- * \param[in] length Length of buffer
- * \return -1 on failure
- * \return number of bytes transmitted on success
- */
-static int32_t pack_data(uint8_t * data, int32_t length)
-{
-	if( PIOS_COM_SendBufferNonBlocking(getComPort(), data, length) < 0)
-		return -1;
-	return length;
-}
-
-/**
  * Module thread, should not return.
  */
 static void EegTask(void *parameters)
@@ -128,8 +99,6 @@ static void EegTask(void *parameters)
 		vTaskDelay(MS2TICKS(UPDATE_PERIOD));
 	}
 #else
-	UAVTalkConnection uavTalkCon;
-	uavTalkCon = UAVTalkInitialize(&pack_data);
 
 	struct pios_ads1299_data data;
 	uint32_t sample = 0;
@@ -148,8 +117,6 @@ static void EegTask(void *parameters)
 		}
 		eegData.Sample = sample++;
 		EEGDataSet(&eegData);
-
-		UAVTalkSendObjectTimestamped(uavTalkCon, EEGDataHandle(), 0, false, 0);
 
 	}
 #endif
