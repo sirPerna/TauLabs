@@ -52,7 +52,8 @@ struct ads1299_dev {
 	enum pios_ads1299_dev_magic magic;
 };
 
-struct pios_eeg_data {
+//! The packed data raw from the chip
+struct ads1299_packed_data {
 	uint8_t  status[3];
 	uint8_t  channels[8*3];
 };
@@ -138,7 +139,7 @@ static struct ads1299_dev *PIOS_ADS1299_alloc(void)
 
 	ads1299_dev->configured = false;
 
-	ads1299_dev->queue = xQueueCreate(PIOS_ADS1299_MAX_QUEUESIZE, sizeof(struct pios_eeg_data));
+	ads1299_dev->queue = xQueueCreate(PIOS_ADS1299_MAX_QUEUESIZE, sizeof(struct pios_ads1299_data));
 
 	if (ads1299_dev->queue == NULL) {
 		vPortFree(ads1299_dev);
@@ -248,7 +249,7 @@ int32_t PIOS_ADS1299_ReadData(struct pios_ads1299_data *data)
 		return -1;
 
 	// Get the data in a packed format
-	struct pios_eeg_data rec_buf;
+	struct ads1299_packed_data rec_buf;
 	if (PIOS_SPI_TransferBlock(pios_ads1299_dev->spi_id, NULL, (uint8_t *) &rec_buf, sizeof(rec_buf), NULL) < 0) {
 		PIOS_ADS1299_ReleaseBus();
 		return -2;
@@ -407,12 +408,10 @@ bool PIOS_ADS1299_IRQHandler(void)
 
 	bool woken = false;
 
-	PIOS_LED_Toggle(1);
-
 	if (PIOS_ADS1299_ClaimBusISR(&woken) != 0)
 		return false;
 
-	struct pios_eeg_data rec_buf;
+	struct ads1299_packed_data rec_buf;
 	if (PIOS_SPI_TransferBlock(pios_ads1299_dev->spi_id, NULL, (uint8_t *) &rec_buf, sizeof(rec_buf), NULL) < 0) {
 		PIOS_ADS1299_ReleaseBusISR(&woken);
 		return woken;
@@ -420,7 +419,19 @@ bool PIOS_ADS1299_IRQHandler(void)
 
 	PIOS_ADS1299_ReleaseBusISR(&woken);
 
-	return woken;
+	// Unpack the data before pushing it out
+	struct pios_ads1299_data data;
+	for (uint32_t i = 0; i < 8; i ++) {
+		data.channels[i] = (rec_buf.channels[i*3] << 16) |
+		                   (rec_buf.channels[i*3 +1] << 8) | 
+		                   (rec_buf.channels[i*3 + 2]);
+	}
+
+
+	portBASE_TYPE xHigherPriorityTaskWoken;
+	xQueueSendToBackFromISR(pios_ads1299_dev->queue, (void *)&data, &xHigherPriorityTaskWoken);
+
+	return (xHigherPriorityTaskWoken == pdTRUE) || woken;
 }
 
 #endif /* PIOS_INCLUDE_ADS1299 */
