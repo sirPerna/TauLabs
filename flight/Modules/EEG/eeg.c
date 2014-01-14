@@ -30,7 +30,7 @@
 #include "sin_lookup.h"
 
 #include "pios_ads1299.h"
- 
+
 #include "eegdata.h"
 #include "eegstatus.h"
 
@@ -74,6 +74,7 @@ MODULE_INITCALL(EEGInitialize, EEGStart);
  */
 static void EegTask(void *parameters)
 {
+#if defined(SIMULATE)
 	const float FREQUENCY = 2;
 	const float SAMPLE_DT = UPDATE_PERIOD / 1000.0f;
 
@@ -97,4 +98,25 @@ static void EegTask(void *parameters)
 
 		vTaskDelay(MS2TICKS(UPDATE_PERIOD));
 	}
+#else
+
+	struct pios_ads1299_data data;
+
+	while(1) {
+		PIOS_WDG_UpdateFlag(PIOS_WDG_ACTUATOR);
+
+		xQueueHandle queue;
+		queue = PIOS_SENSORS_GetQueue(PIOS_SENSOR_EEG);
+		if(queue == NULL || xQueueReceive(queue, (void *) &data, MS2TICKS(50)) == errQUEUE_EMPTY) {
+			continue;
+		}
+
+		EEGDataData eegData;
+		for (uint32_t i = 0; i < 8; i ++) {
+			eegData.Data[i] = data.channels[i];
+		}
+		EEGDataSet(&eegData);
+
+	}
+#endif
 }
