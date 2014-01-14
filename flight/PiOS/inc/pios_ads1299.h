@@ -42,7 +42,7 @@ struct pios_ads1299_cfg {
 };
 
 struct pios_ads1299_data {
-	uint32_t channels[8];
+	float channels[8];
 };
 
 /* Public Functions */

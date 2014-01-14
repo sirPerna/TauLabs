@@ -219,8 +219,17 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG3, ADS1299_CONFIG3_PWR_REF | 
 	                    ADS1299_CONFIG3_BIAS_INT | ADS1299_CONFIG3_PWR_BIAS);
 
-	// Connect all the negative inputs to SRB1
-	PIOS_ADS1299_SetReg(ADS1299_REG_MISC1, ADS1299_MISC1_SRB1);
+
+	if (true) {
+		// Connect all the negative inputs to SRB1
+		PIOS_ADS1299_SetReg(ADS1299_REG_MISC1, ADS1299_MISC1_SRB1);
+	} else {  // test mode
+		PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG2, 0b11010000); // Internal test signal
+		PIOS_ADS1299_SetReg(ADS1299_REG_CH1SET, 0b01100101);  // Ch 1 = test signal
+		PIOS_ADS1299_SetReg(ADS1299_REG_CH2SET, 0b01100011);  // Ch 2 = supply measurements (analog)
+		PIOS_ADS1299_SetReg(ADS1299_REG_CH3SET, 0b01100011);  // Ch 3 = supply measurements (digital)
+		PIOS_ADS1299_SetReg(ADS1299_REG_CH4SET, 0b01100100);  // Ch 4 = temperature
+	}
 
 	// Register the sensor queue so user space can fetch data when available
 	PIOS_SENSORS_Register(PIOS_SENSOR_EEG, pios_ads1299_dev->queue);
@@ -403,6 +412,10 @@ static int32_t PIOS_ADS1299_ReadID()
 */
 bool PIOS_ADS1299_IRQHandler(void)
 {
+
+	// vref / (2^23 - 1) * 1000 mV / V / gain
+	const float scale = 4.5f / (8388608 - 1) * 1000 / 24;
+
 	if (PIOS_ADS1299_Validate(pios_ads1299_dev) != 0 || pios_ads1299_dev->configured == false)
 		return false;
 
@@ -422,9 +435,15 @@ bool PIOS_ADS1299_IRQHandler(void)
 	// Unpack the data before pushing it out
 	struct pios_ads1299_data data;
 	for (uint32_t i = 0; i < 8; i ++) {
-		data.channels[i] = (rec_buf.channels[i*3] << 16) |
+		int32_t raw_data = (rec_buf.channels[i*3] << 16) |
 		                   (rec_buf.channels[i*3 +1] << 8) | 
 		                   (rec_buf.channels[i*3 + 2]);
+
+		// Sign extend the data while unpacking
+      	if (raw_data & 0x00800000)
+      		raw_data |= 0xFF000000;
+
+		data.channels[i] = raw_data * scale;
 	}
 
 
