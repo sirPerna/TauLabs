@@ -231,6 +231,12 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 		PIOS_ADS1299_SetReg(ADS1299_REG_CH4SET, 0b01100100);  // Ch 4 = temperature
 	}
 
+	if (true) {
+		// Generate sin wave for impedance testing
+		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF, 0x0D);    // Large 7.8 Hz
+		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSP, 0xFF); // Test all leads
+	}
+
 	// Register the sensor queue so user space can fetch data when available
 	PIOS_SENSORS_Register(PIOS_SENSOR_EEG, pios_ads1299_dev->queue);
 
