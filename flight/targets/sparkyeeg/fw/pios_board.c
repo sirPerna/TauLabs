@@ -72,7 +72,7 @@ static const struct pios_exti_cfg pios_exti_ads1299_cfg __exti_config = {
 		.init = {
 			.EXTI_Line = EXTI_Line3, // matches above GPIO pin
 			.EXTI_Mode = EXTI_Mode_Interrupt,
-			.EXTI_Trigger = EXTI_Trigger_Rising,
+			.EXTI_Trigger = EXTI_Trigger_Falling,
 			.EXTI_LineCmd = ENABLE,
 		},
 	},

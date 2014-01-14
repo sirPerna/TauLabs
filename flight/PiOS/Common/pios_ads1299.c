@@ -224,6 +224,8 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	// Register the sensor queue so user space can fetch data when available
 	PIOS_SENSORS_Register(PIOS_SENSOR_EEG, pios_ads1299_dev->queue);
 
+	pios_ads1299_dev->configured = true;
+
 	// Set up EXTI line
 	PIOS_EXTI_Init(cfg->exti_cfg);
 
@@ -232,7 +234,7 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	PIOS_ADS1299_SendCommand(ADS1299_RDATAC);
 
 	// Make sure the DRDY line is deasserted
-	PIOS_ADS1299_GetReg(0);
+	//PIOS_ADS1299_GetReg(0);
 
 	// Assert the start line
 	GPIO_SetBits(cfg->start.gpio, cfg->start.init.GPIO_Pin);
@@ -409,8 +411,6 @@ bool PIOS_ADS1299_IRQHandler(void)
 
 	if (PIOS_ADS1299_ClaimBusISR(&woken) != 0)
 		return false;
-
-	while(1);
 
 	struct pios_eeg_data rec_buf;
 	if (PIOS_SPI_TransferBlock(pios_ads1299_dev->spi_id, NULL, (uint8_t *) &rec_buf, sizeof(rec_buf), NULL) < 0) {
