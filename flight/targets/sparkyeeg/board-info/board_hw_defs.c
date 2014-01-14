@@ -343,7 +343,7 @@ static const struct pios_spi_cfg pios_spi_eeg_cfg = {
 		.SPI_CRCPolynomial     = 7,
 		.SPI_CPOL              = SPI_CPOL_Low,
 		.SPI_CPHA              = SPI_CPHA_2Edge,
-		.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2,
+		.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16,
 	},
 	.use_crc = false,
 	.sclk = {
