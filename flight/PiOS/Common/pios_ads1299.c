@@ -216,6 +216,8 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	if ((PIOS_ADS1299_ReadID() & 0x1F) != 0b00011110)
 		return -1;
 
+	PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG1, 0x96); /* No daisy chain */
+
 	PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG3, ADS1299_CONFIG3_PWR_REF | 
 	                    ADS1299_CONFIG3_BIAS_INT | ADS1299_CONFIG3_PWR_BIAS);
 
@@ -223,6 +225,8 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	if (true) {
 		// Connect all the negative inputs to SRB1
 		PIOS_ADS1299_SetReg(ADS1299_REG_MISC1, ADS1299_MISC1_SRB1);
+		for (uint32_t i = 0; i < 8; i++)
+			PIOS_ADS1299_SetReg(ADS1299_REG_CH1SET + i , 0x60);  // normal electrode
 	} else {  // test mode
 		PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG2, 0b11010000); // Internal test signal
 		PIOS_ADS1299_SetReg(ADS1299_REG_CH1SET, 0b01100101);  // Ch 1 = test signal
@@ -233,8 +237,14 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 
 	if (true) {
 		// Generate sin wave for impedance testing
-		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF, 0x0D);    // Large 7.8 Hz
+		//PIOS_ADS1299_SetReg(ADS1299_REG_LOFF, 0x0D);    // Large 7.8 Hz
+		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF, 0x01);    // Large 7.8 Hz
 		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSP, 0xFF); // Test all leads
+	}
+
+	if (false) {
+		// Enable bias circuitry
+		PIOS_ADS1299_SetReg(ADS1299_REG_BIAS_SENSP, 0x01); // Measure bias from all leads
 	}
 
 	// Register the sensor queue so user space can fetch data when available
