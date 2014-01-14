@@ -101,7 +101,7 @@ static void EegTask(void *parameters)
 #else
 
 	struct pios_ads1299_data data;
-
+	uint32_t sample = 0;
 	while(1) {
 		PIOS_WDG_UpdateFlag(PIOS_WDG_ACTUATOR);
 
@@ -115,6 +115,7 @@ static void EegTask(void *parameters)
 		for (uint32_t i = 0; i < 8; i ++) {
 			eegData.Data[i] = data.channels[i];
 		}
+		eegData.Sample = sample++;
 		EEGDataSet(&eegData);
 
 	}
