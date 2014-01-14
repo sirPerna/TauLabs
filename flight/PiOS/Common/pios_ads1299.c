@@ -64,9 +64,60 @@ static struct ads1299_dev *PIOS_ADS1299_alloc(void);
 static int32_t PIOS_ADS1299_Validate(struct ads1299_dev *dev);
 static int32_t PIOS_ADS1299_ClaimBus();
 static int32_t PIOS_ADS1299_ReleaseBus();
+static int32_t PIOS_ADS1299_SendCommand(uint8_t command);
 static int32_t PIOS_ADS1299_SetReg(uint8_t address, uint8_t buffer);
 static int32_t PIOS_ADS1299_GetReg(uint8_t address);
 static int32_t PIOS_ADS1299_ReadID();
+
+//! Private definitions
+
+// Opcodes
+#define ADS1299_WAKEUP    0x02
+#define ADS1299_STANDBY   0x04
+#define ADS1299_RESET     0x06
+#define ADS1299_START     0x08
+#define ADS1299_STOP      0x0A
+#define ADS1299_RDATAC    0x10
+#define ADS1299_SDATAC    0x11
+#define ADS1299_RDATA     0x12
+#define ADS1299_RREG      0x20
+#define ADS1299_WREG      0x40
+
+// Registers
+#define ADS1299_REG_ID 0x00
+#define ADS1299_REG_CONFIG1 0x01  /* default ok */
+#define ADS1299_REG_CONFIG2 0x02  /* default ok */
+ 
+#define ADS1299_REG_CONFIG3 0x03
+#define ADS1299_CONFIG3_PWR_REF 0x80 /* turn on internal reference buffer */
+#define ADS1299_CONFIG3_BIAS_INT 0x08 /* turn on internal bias reference */
+#define ADS1299_CONFIG3_PWR_BIAS 0x04 /* turn on bias buffer */
+ 
+/* use the settings here to generate pulses for impedance measurements */
+#define ADS1299_REG_LOFF 0x04
+ 
+/* defaults ok */
+#define ADS1299_REG_CH1SET 0x05
+#define ADS1299_REG_CH2SET 0x06
+#define ADS1299_REG_CH3SET 0x07
+#define ADS1299_REG_CH4SET 0x08
+#define ADS1299_REG_CH5SET 0x09
+#define ADS1299_REG_CH6SET 0x0A
+#define ADS1299_REG_CH7SET 0x0B
+#define ADS1299_REG_CH8SET 0x0C
+ 
+#define ADS1299_REG_BIAS_SENSP 0x0D /* set to 0xFF if all electrodes are connected */
+#define ADS1299_REG_BIAS_SENSN 0x0E /* default ok (no electrodes connected) */
+ 
+#define ADS1299_REG_LOFF_SENSP 0x0F
+#define ADS1299_REG_LOFF_SENSN 0x10
+#define ADS1299_REG_LOFF_FLIP 0x11
+#define ADS1299_REG_LOFF_STATP 0x12
+#define ADS1299_REG_LOFF_STATN 0x13
+#define ADS1299_REG_GPIO 0x14
+#define ADS1299_REG_MISC1 0x15
+#define ADS1299_REG_MISC2 0x16
+#define ADS1299_REG_CONFIG4 0x17
 
 /**
  * @brief Allocate a new device
@@ -136,8 +187,8 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	GPIO_ResetBits(cfg->reset.gpio, cfg->reset.init.GPIO_Pin);
 	GPIO_ResetBits(cfg->pwdn.gpio, cfg->pwdn.init.GPIO_Pin);
 
-	PIOS_DELAY_WaitmS(10);
-	
+	PIOS_DELAY_WaitmS(100);
+
 	GPIO_SetBits(cfg->pwdn.gpio, cfg->pwdn.init.GPIO_Pin);
 	GPIO_SetBits(cfg->reset.gpio, cfg->reset.init.GPIO_Pin);
 	PIOS_DELAY_WaitmS(5);
@@ -145,6 +196,9 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	PIOS_DELAY_WaitmS(5);
 	GPIO_SetBits(cfg->reset.gpio, cfg->reset.init.GPIO_Pin);
 
+	PIOS_WDG_Clear();
+
+	PIOS_DELAY_WaitmS(100);
 
 	if (false) {
 		/* Set up EXTI line */
@@ -154,13 +208,38 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 		PIOS_ADS1299_GetReg(0);
 	}
 
-	if ((PIOS_ADS1299_ReadID() & 0x1F) == 0b00011110)
+	PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG3, ADS1299_CONFIG3_PWR_REF | 
+	                    ADS1299_CONFIG3_BIAS_INT | ADS1299_CONFIG3_PWR_BIAS);
+
+
+	// The chip resets in continuous data mode which blocks reading registers
+	PIOS_ADS1299_SendCommand(ADS1299_SDATAC);
+
+	PIOS_ADS1299_ReadID();
+	if ((PIOS_ADS1299_ReadID() & 0x1F) > 0) //== 0b00011110)
 		return 0;
 	else
 		return -1;
 
 	//PIOS_SENSORS_Register(PIOS_SENSOR_GYRO, pios_mpu6000_dev->gyro_queue);
 
+	return 0;
+}
+
+/**
+ * Send command to the ADS1299 chip
+ */
+static int32_t PIOS_ADS1299_SendCommand(uint8_t command)
+{
+	if (PIOS_ADS1299_ClaimBus() != 0)
+		return -1;
+
+	if (PIOS_SPI_TransferByte(pios_ads1299_dev->spi_id, command) != 0) {
+		PIOS_ADS1299_ReleaseBus();
+		return -2;
+	}
+
+	PIOS_ADS1299_ReleaseBus();
 	return 0;
 }
 
