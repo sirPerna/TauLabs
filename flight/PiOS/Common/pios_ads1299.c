@@ -53,7 +53,8 @@ struct ads1299_dev {
 };
 
 struct pios_eeg_data {
-	uint32_t data;
+	uint8_t  status[3];
+	uint8_t  channels[8*3];
 };
 
 //! Global structure for this device device
@@ -115,7 +116,10 @@ static int32_t PIOS_ADS1299_ReadID();
 #define ADS1299_REG_LOFF_STATP 0x12
 #define ADS1299_REG_LOFF_STATN 0x13
 #define ADS1299_REG_GPIO 0x14
+
 #define ADS1299_REG_MISC1 0x15
+#define ADS1299_MISC1_SRB1 0x20 /* connect all negative inputs to SRB1 */
+
 #define ADS1299_REG_MISC2 0x16
 #define ADS1299_REG_CONFIG4 0x17
 
@@ -201,9 +205,6 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	PIOS_DELAY_WaitmS(100);
 
 	if (false) {
-		/* Set up EXTI line */
-		PIOS_EXTI_Init(cfg->exti_cfg);
-
 		PIOS_ADS1299_SetReg(0,0);
 		PIOS_ADS1299_GetReg(0);
 	}
@@ -217,7 +218,47 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG3, ADS1299_CONFIG3_PWR_REF | 
 	                    ADS1299_CONFIG3_BIAS_INT | ADS1299_CONFIG3_PWR_BIAS);
 
-	//PIOS_SENSORS_Register(PIOS_SENSOR_GYRO, pios_mpu6000_dev->gyro_queue);
+	// Connect all the negative inputs to SRB1
+	PIOS_ADS1299_SetReg(ADS1299_REG_MISC1, ADS1299_MISC1_SRB1);
+
+	// Register the sensor queue so user space can fetch data when available
+	PIOS_SENSORS_Register(PIOS_SENSOR_EEG, pios_ads1299_dev->queue);
+
+	// Set up EXTI line
+	PIOS_EXTI_Init(cfg->exti_cfg);
+
+	// Enable continuous reading of data
+	PIOS_ADS1299_SendCommand(ADS1299_WAKEUP);
+	PIOS_ADS1299_SendCommand(ADS1299_RDATAC);
+
+	// Make sure the DRDY line is deasserted
+	PIOS_ADS1299_GetReg(0);
+
+	// Assert the start line
+	GPIO_SetBits(cfg->start.gpio, cfg->start.init.GPIO_Pin);
+
+	return 0;
+}
+
+int32_t PIOS_ADS1299_ReadData(struct pios_ads1299_data *data)
+{
+	if (PIOS_ADS1299_ClaimBus() != 0)
+		return -1;
+
+	// Get the data in a packed format
+	struct pios_eeg_data rec_buf;
+	if (PIOS_SPI_TransferBlock(pios_ads1299_dev->spi_id, NULL, (uint8_t *) &rec_buf, sizeof(rec_buf), NULL) < 0) {
+		PIOS_ADS1299_ReleaseBus();
+		return -2;
+	}
+
+	PIOS_ADS1299_ReleaseBus();
+
+	for (uint32_t i = 0; i < 8; i ++) {
+		data->channels[i] = (rec_buf.channels[i*3] << 16) |
+		                   (rec_buf.channels[i*3 +1] << 8) | 
+		                   (rec_buf.channels[i*3 + 2]);
+	}
 
 	return 0;
 }
@@ -364,10 +405,18 @@ bool PIOS_ADS1299_IRQHandler(void)
 
 	bool woken = false;
 
-	// TODO: Fetch data from sensor
+	PIOS_LED_Toggle(1);
 
 	if (PIOS_ADS1299_ClaimBusISR(&woken) != 0)
 		return false;
+
+	while(1);
+
+	struct pios_eeg_data rec_buf;
+	if (PIOS_SPI_TransferBlock(pios_ads1299_dev->spi_id, NULL, (uint8_t *) &rec_buf, sizeof(rec_buf), NULL) < 0) {
+		PIOS_ADS1299_ReleaseBusISR(&woken);
+		return woken;
+	}
 
 	PIOS_ADS1299_ReleaseBusISR(&woken);
 

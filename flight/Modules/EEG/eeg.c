@@ -29,6 +29,8 @@
 #include "physical_constants.h"
 #include "sin_lookup.h"
 
+#include "pios_ads1299.h"
+ 
 #include "eegdata.h"
 #include "eegstatus.h"
 

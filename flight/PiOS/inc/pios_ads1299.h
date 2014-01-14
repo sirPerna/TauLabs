@@ -41,9 +41,14 @@ struct pios_ads1299_cfg {
 	struct stm32_gpio start;	
 };
 
+struct pios_ads1299_data {
+	uint32_t channels[8];
+};
+
 /* Public Functions */
 extern int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios_ads1299_cfg *new_cfg);
 extern bool PIOS_ADS1299_IRQHandler(void);
+extern int32_t PIOS_ADS1299_ReadData(struct pios_ads1299_data *data);
 
 #endif /* PIOS_ADS1299_H */
 
