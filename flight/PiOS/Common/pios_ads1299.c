@@ -208,18 +208,14 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 		PIOS_ADS1299_GetReg(0);
 	}
 
-	PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG3, ADS1299_CONFIG3_PWR_REF | 
-	                    ADS1299_CONFIG3_BIAS_INT | ADS1299_CONFIG3_PWR_BIAS);
-
-
 	// The chip resets in continuous data mode which blocks reading registers
 	PIOS_ADS1299_SendCommand(ADS1299_SDATAC);
 
-	PIOS_ADS1299_ReadID();
-	if ((PIOS_ADS1299_ReadID() & 0x1F) > 0) //== 0b00011110)
-		return 0;
-	else
+	if ((PIOS_ADS1299_ReadID() & 0x1F) != 0b00011110)
 		return -1;
+
+	PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG3, ADS1299_CONFIG3_PWR_REF | 
+	                    ADS1299_CONFIG3_BIAS_INT | ADS1299_CONFIG3_PWR_BIAS);
 
 	//PIOS_SENSORS_Register(PIOS_SENSOR_GYRO, pios_mpu6000_dev->gyro_queue);
 
