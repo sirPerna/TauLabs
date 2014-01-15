@@ -99,6 +99,7 @@ public class Graph extends ObjectManagerFragment {
 		
 		public DataInterface(int channel, int idx) {
 			this.idx = idx;
+			this.channel = channel;
 		}
 		
 		@Override
