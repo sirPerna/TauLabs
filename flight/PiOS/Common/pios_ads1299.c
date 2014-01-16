@@ -242,14 +242,19 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	if (false) {
 		// Generate sin wave for impedance testing
 		//PIOS_ADS1299_SetReg(ADS1299_REG_LOFF, 0x0D);    // Large 7.8 Hz
-		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF, 0x01);    // Small 7.8 Hz
-		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSP, 0xFF); // Test all leads
+		//PIOS_ADS1299_SetReg(ADS1299_REG_LOFF, 0x01);    // Small 7.8 Hz
+		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF, 0x03);    // Small fDR / 4
+		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSP, 0x00); // Test all leads
 		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSN, 0x00); // Test all leads
+	} else {
+		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSP, 0x00); // Test no leads
+		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSN, 0x00); // Test no leads
 	}
 
 	if (true) {
 		// Enable bias circuitry
 		PIOS_ADS1299_SetReg(ADS1299_REG_BIAS_SENSP, 0x07); // Measure bias from all leads
+		//PIOS_ADS1299_SetReg(ADS1299_REG_BIAS_SENSN, 0xFF); // Measure bias from all leads
 	}
 
 	// Register the sensor queue so user space can fetch data when available
