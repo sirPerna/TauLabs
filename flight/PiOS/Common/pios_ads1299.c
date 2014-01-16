@@ -225,8 +225,11 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	if (true) {
 		// Connect all the negative inputs to SRB1
 		PIOS_ADS1299_SetReg(ADS1299_REG_MISC1, ADS1299_MISC1_SRB1);
-		for (uint32_t i = 0; i < 8; i++)
-			PIOS_ADS1299_SetReg(ADS1299_REG_CH1SET + i , 0x00);  // normal electrode
+		for (uint32_t i = 0; i < 3; i++)
+			PIOS_ADS1299_SetReg(ADS1299_REG_CH1SET + i , 0x60);  // normal electrode
+		for (uint32_t i = 3; i < 8; i++)
+			PIOS_ADS1299_SetReg(ADS1299_REG_CH1SET + i , 0x61);  // normal electrode
+
 		PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG2, 0xC0); // No test signal
 	} else {  // test mode
 		PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG2, 0b11010000); // Internal test signal
