@@ -81,17 +81,29 @@ public class Spectrogram extends ObjectManagerFragment {
 
 	    	// TODO: redraw the image 
 	    	ImageView im = (ImageView) getActivity().findViewById(R.id.imageSpectrogram);
+	    	float min = 1e10f;
+	    	float max = -1e10f;
+	    	
 	    	for (int i = 0; i < HistoryTask.HISTORY_LEN / 2; i++)
 	    		for (int j = 0; j < SPECTRUM_NUM; j++) {
-	    			int val = (int) spectrogram[i][j] * 2;
-	    			val = (val > 255) ? 255 : 
+	    			if (spectrogram[i][j] < min)
+	    				min = spectrogram[i][j];
+	    			if (spectrogram[i][j] > max)
+	    				max = spectrogram[i][j];
+	    		}
+
+	    	for (int i = 0; i < HistoryTask.HISTORY_LEN / 2; i++)
+	    		for (int j = 0; j < SPECTRUM_NUM; j++) {
+	    			float val = (spectrogram[i][j] - min) / (max - min); // scale numbers from 0 to 1
+	    			val = (val > 1) ? 1 : 
 	    				  (val < 0) ? 0 :
 	    				   val;
-	    			val = 0x80FFFFFF & Color.rgb(val, val, val);
-	    			bitmap.setPixel(i, j, val);
+	    			int col = Color.rgb((int) (val*255), (int) (val*255), (int) (255-val*255));
+	    			
+	    			bitmap.setPixel(i, j, col);
 	    		}
 	    	im.setImageBitmap(bitmap);
-	    	im.setBackgroundColor(Color.GRAY);
+	    	im.setBackgroundColor(Color.BLACK);
 
 	    }
 	};
@@ -120,11 +132,12 @@ public class Spectrogram extends ObjectManagerFragment {
 		        		
 		        		System.arraycopy(history.getHistory()[channelIdx], 0, dataTemp, 0, HistoryTask.HISTORY_LEN);
 		        		System.arraycopy(history.getHistory()[channelIdx], 0, spectrumTemp, 0, HistoryTask.HISTORY_LEN);
-		        		
-		        		// Subtract average from the traces
-		        		spectrumTemp[0] = 0;
-		        		
+		        				        		
 		        		f.fft(dataTemp, spectrumTemp);
+
+		        		// Zero the DC component
+		        		spectrumTemp[0] = 0;
+		        		dataTemp[0] = 0;
 		        		
 		        		for (int j = 0; j < HistoryTask.HISTORY_LEN; j++) {
 		        			spectrumTemp[j] = (float) Math.sqrt((double) (spectrumTemp[j]*spectrumTemp[j] + 

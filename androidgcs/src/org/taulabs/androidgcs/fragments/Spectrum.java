@@ -174,11 +174,13 @@ public class Spectrum extends ObjectManagerFragment {
 			        		System.arraycopy(history.getHistory()[i], 0, spectrumTemp, 0, HistoryTask.HISTORY_LEN);
 			        		f.fft(dataTemp, spectrumTemp);
 			        		spectrumTemp[0] = 0;
+			        		dataTemp[0] = 0;
 
 			        		for (int j = 0; j < HistoryTask.HISTORY_LEN; j++) {
 			        			spectrumTemp[j] = (float) Math.sqrt((double) (spectrumTemp[j]*spectrumTemp[j] + 
 			        					dataTemp[j] * dataTemp[j]));
 			        		}
+			        		spectrumTemp[0] = 0;
 			        		System.arraycopy(spectrumTemp, 0, spectrum[i], 0, HistoryTask.HISTORY_LEN);
 			        	}
 	
