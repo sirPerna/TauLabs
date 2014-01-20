@@ -29,9 +29,6 @@
 #include "physical_constants.h"
 #include "sin_lookup.h"
 
-#include "uavtalk.h"
-#include "uavtalk_priv.h"
-
 #include "pios_ads1299.h"
 
 #include "eegdata.h"
@@ -52,7 +49,6 @@ static bool impedance_monitoring;
 // Private functions
 static void EegTask(void *parameters);
 static void settingsUpdatedCb(UAVObjEvent * objEv);
-static void sendEEGObject(EEGDataData *data);
 
 int32_t EEGInitialize()
 {
@@ -76,21 +72,6 @@ int32_t EEGStart()
 }
 
 MODULE_INITCALL(EEGInitialize, EEGStart);
-
-/**
- * Determine input/output com port as highest priority available 
- */
-static uintptr_t getComPort() {
-#if defined(PIOS_INCLUDE_USB)
-	if ( PIOS_COM_Available(PIOS_COM_TELEM_USB) )
-		return PIOS_COM_TELEM_USB;
-	else
-#endif /* PIOS_INCLUDE_USB */
-		if ( PIOS_COM_Available(PIOS_COM_TELEM_RF) )
-			return PIOS_COM_TELEM_RF;
-		else
-			return 0;
-}
 
 /**
  * Module thread, should not return.
@@ -149,7 +130,7 @@ static void EegTask(void *parameters)
 			eegData.Data[i] = data.channels[i];
 		}
 		eegData.Sample = sample++;
-		sendEEGObject(&eegData);
+		EEGDataSet(&eegData);
 
 		// Measure the power at fDR / 4
 		if (impedance_monitoring) {
@@ -197,45 +178,6 @@ static void EegTask(void *parameters)
 
 	}
 #endif
-}
-
-/**
- * This replicates the UAVTalk method because we want to
- * do this as efficiently as possible and without the event
- * system being hammered
- */
-static void sendEEGObject(EEGDataData *data)
-{
-	int32_t length;
-	int32_t dataOffset;
-	uint32_t objId;
-	uint8_t txBuffer[256];
-
-	// Setup type and object id fields
-	objId = EEGDATA_OBJID;
-	txBuffer[0] = UAVTALK_SYNC_VAL;  // sync byte
-	txBuffer[1] = UAVTALK_TYPE_OBJ;
-	// data length inserted here below
-	txBuffer[4] = (uint8_t)(objId & 0xFF);
-	txBuffer[5] = (uint8_t)((objId >> 8) & 0xFF);
-	txBuffer[6] = (uint8_t)((objId >> 16) & 0xFF);
-	txBuffer[7] = (uint8_t)((objId >> 24) & 0xFF);
-	
-	// Setup instance ID if one is required
-	dataOffset = 8;
-
-	length = EEGDATA_NUMBYTES;
-	memcpy(&txBuffer[dataOffset], data, length);
-	
-	// Store the packet length
-	txBuffer[2] = (uint8_t)((dataOffset+length) & 0xFF);
-	txBuffer[3] = (uint8_t)(((dataOffset+length) >> 8) & 0xFF);
-	
-	// Calculate checksum
-	txBuffer[dataOffset+length] = PIOS_CRC_updateCRC(0, txBuffer, dataOffset+length);
-	uint16_t tx_msg_len = dataOffset+length+UAVTALK_CHECKSUM_LENGTH;
-
-	PIOS_COM_SendBufferNonBlocking(getComPort(), txBuffer, tx_msg_len);
 }
 
 static void settingsUpdatedCb(UAVObjEvent * ev) 
