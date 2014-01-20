@@ -44,6 +44,7 @@
 
 // Private variables
 static xTaskHandle taskHandle;
+static bool impedance_monitoring;
 
 // Private functions
 static void EegTask(void *parameters);
@@ -53,6 +54,7 @@ int32_t EEGInitialize()
 {
 	EEGDataInitialize();
 	EEGStatusInitialize();
+	EEGSettingsInitialize();
 
 	return 0;
 }
@@ -107,6 +109,13 @@ static void EegTask(void *parameters)
 
 	struct pios_ads1299_data data;
 	uint32_t sample = 0;
+
+	const uint32_t CHANNELS = 8;
+
+	float cos_accum[CHANNELS], sin_accum[CHANNELS];
+	const float cos_table[] = {1, 0, -1, 0};
+	const float sin_table[] = {0, 1, 0, -1};
+
 	while(1) {
 		PIOS_WDG_UpdateFlag(PIOS_WDG_ACTUATOR);
 
@@ -117,11 +126,46 @@ static void EegTask(void *parameters)
 		}
 
 		EEGDataData eegData;
-		for (uint32_t i = 0; i < 8; i ++) {
+		for (uint32_t i = 0; i < CHANNELS; i ++) {
 			eegData.Data[i] = data.channels[i];
 		}
 		eegData.Sample = sample++;
 		EEGDataSet(&eegData);
+
+		// Measure the power at fDR / 4
+		if (impedance_monitoring) {
+
+			EEGStatusData eegStatus;
+
+			const uint32_t PERIODS = 8;
+
+			for (uint32_t i = 0; i < CHANNELS; i++) {
+				cos_accum[i] += eegData.Data[i] * cos_table[sample % 4];
+				sin_accum[i] += eegData.Data[i] * sin_table[sample % 4];
+			}
+
+			if (sample % (4 * PERIODS) == 0) {
+				
+				for (uint32_t i = 0; i < CHANNELS; i++) {
+
+					float a = 2.0f / PERIODS * cos_accum[i];
+					float b = 2.0f / PERIODS * sin_accum[i];
+					float amp = sqrtf(a*a + b*b); //uV
+
+					// +/- 6nA square wave pulse. Convert voltage to nV
+					eegStatus.Impedance[i] = amp * 1000.0f / 12.0f;
+
+					// Fudge factor
+					// eegStatus.Impedance[i] /= 2.6f;
+
+					// Reset the accumulator
+					cos_accum[i] = 0;
+					sin_accum[i] = 0;
+				}
+			}
+
+			EEGStatusSet(&eegStatus);
+		}
 
 	}
 #endif
@@ -147,5 +191,6 @@ static void settingsUpdatedCb(UAVObjEvent * ev)
 		break;
 	}
 
-	PIOS_ADS1299_EnableImpedance(eegSettings.ImpedanceMonitoring == EEGSETTINGS_IMPEDANCEMONITORING_TRUE);
+	impedance_monitoring = eegSettings.ImpedanceMonitoring == EEGSETTINGS_IMPEDANCEMONITORING_TRUE;
+	PIOS_ADS1299_EnableImpedance(impedance_monitoring);
 }
