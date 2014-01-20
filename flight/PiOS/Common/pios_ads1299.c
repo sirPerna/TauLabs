@@ -241,7 +241,7 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 
 	PIOS_ADS1299_EnableImpedance(false);
 
-	if (true) {
+	if (false) {
 		// Enable bias circuitry
 		PIOS_ADS1299_SetReg(ADS1299_REG_BIAS_SENSP, 0x07); // Measure bias from all leads
 		//PIOS_ADS1299_SetReg(ADS1299_REG_BIAS_SENSN, 0xFF); // Measure bias from all leads
