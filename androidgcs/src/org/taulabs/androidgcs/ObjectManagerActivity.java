@@ -42,6 +42,7 @@ import org.taulabs.androidgcs.drawer.NavMenuActivity;
 import org.taulabs.androidgcs.drawer.NavMenuItem;
 import org.taulabs.androidgcs.drawer.NavMenuSection;
 import org.taulabs.androidgcs.fragments.Graph;
+import org.taulabs.androidgcs.fragments.Impedances;
 import org.taulabs.androidgcs.fragments.ObjectManagerFragment;
 import org.taulabs.androidgcs.fragments.PFD;
 import org.taulabs.androidgcs.fragments.Map;
@@ -745,6 +746,7 @@ public abstract class ObjectManagerActivity extends Activity {
 				NavMenuItem.create(108, "Graph", "ic_controller", true, this),
 				NavMenuItem.create(109, "Spectrum", "ic_controller", true, this),
 				NavMenuItem.create(110, "Spectrogram", "ic_controller", true, this),
+				NavMenuItem.create(111, "Impedances", "ic_controller", true, this),
 		};
 
 		navDrawerActivityConfiguration.setNavItems(menu);
@@ -790,6 +792,8 @@ public abstract class ObjectManagerActivity extends Activity {
 			return new Spectrum();
 		case 110:
 			return new Spectrogram();
+		case 111:
+			return new Impedances();
 		}
 		return null;
 	}
