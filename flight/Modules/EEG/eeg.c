@@ -137,7 +137,12 @@ static void EegTask(void *parameters)
 
 			EEGStatusData eegStatus;
 
+			// Sampling rate at 500 sps, impedance pulse at 1/4 that and
+			// then impedance measured at 1/8 that (so updated at 15 Hz)
+			// IMPEDANCE_ALPHA of 0.97 gives about one second time
+			// constant
 			const uint32_t PERIODS = 8;
+			const float IMPEDANCE_ALPHA = 0.97f;
 
 			for (uint32_t i = 0; i < CHANNELS; i++) {
 				cos_accum[i] += eegData.Data[i] * cos_table[sample % 4];
@@ -153,7 +158,8 @@ static void EegTask(void *parameters)
 					float amp = sqrtf(a*a + b*b); //uV
 
 					// +/- 6nA square wave pulse. Convert voltage to nV
-					eegStatus.Impedance[i] = amp * 1000.0f / 12.0f;
+					eegStatus.Impedance[i] = eegStatus.Impedance[i] * IMPEDANCE_ALPHA +
+					                         (1 - IMPEDANCE_ALPHA) * amp * 1000.0f / 12.0f;
 
 					// Fudge factor
 					// eegStatus.Impedance[i] /= 2.6f;
