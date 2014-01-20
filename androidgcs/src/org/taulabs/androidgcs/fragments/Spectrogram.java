@@ -120,6 +120,10 @@ public class Spectrogram extends ObjectManagerFragment {
 		        		
 		        		System.arraycopy(history.getHistory()[channelIdx], 0, dataTemp, 0, HistoryTask.HISTORY_LEN);
 		        		System.arraycopy(history.getHistory()[channelIdx], 0, spectrumTemp, 0, HistoryTask.HISTORY_LEN);
+		        		
+		        		// Subtract average from the traces
+		        		spectrumTemp[0] = 0;
+		        		
 		        		f.fft(dataTemp, spectrumTemp);
 		        		
 		        		for (int j = 0; j < HistoryTask.HISTORY_LEN; j++) {
