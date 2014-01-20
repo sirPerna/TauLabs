@@ -440,7 +440,7 @@ bool PIOS_ADS1299_IRQHandler(void)
 {
 
 	// vref / (2^23 - 1) * 1000 mV / V / gain
-	const float scale = 4.5f / (8388608 - 1) * 1000 / 24;
+	const float scale = 4.5f / (8388608 - 1) * 1000000 / 24;
 
 	if (PIOS_ADS1299_Validate(pios_ads1299_dev) != 0 || pios_ads1299_dev->configured == false)
 		return false;
