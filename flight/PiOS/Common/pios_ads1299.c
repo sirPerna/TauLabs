@@ -239,17 +239,7 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 		PIOS_ADS1299_SetReg(ADS1299_REG_CH4SET, 0b01100100);  // Ch 4 = temperature
 	}
 
-	if (false) {
-		// Generate sin wave for impedance testing
-		//PIOS_ADS1299_SetReg(ADS1299_REG_LOFF, 0x0D);    // Large 7.8 Hz
-		//PIOS_ADS1299_SetReg(ADS1299_REG_LOFF, 0x01);    // Small 7.8 Hz
-		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF, 0x03);    // Small fDR / 4
-		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSP, 0x00); // Test all leads
-		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSN, 0x00); // Test all leads
-	} else {
-		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSP, 0x00); // Test no leads
-		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSN, 0x00); // Test no leads
-	}
+	PIOS_ADS1299_EnableImpedance(false);
 
 	if (true) {
 		// Enable bias circuitry
@@ -269,11 +259,24 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	PIOS_ADS1299_SendCommand(ADS1299_WAKEUP);
 	PIOS_ADS1299_SendCommand(ADS1299_RDATAC);
 
-	// Make sure the DRDY line is deasserted
-	//PIOS_ADS1299_GetReg(0);
-
 	// Assert the start line
 	GPIO_SetBits(cfg->start.gpio, cfg->start.init.GPIO_Pin);
+
+	return 0;
+}
+
+//! Enable the 6nA impedance monitoring pulse
+int32_t PIOS_ADS1299_EnableImpedance(bool enable)
+{
+	if (enable) {
+		// Ouptut 6nA square pulse at fDR / 4
+		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF, 0x03);
+		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSP, 0xFF); // Test all leads
+		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSN, 0x00);
+	} else {
+		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSP, 0x00); // Test no leads
+		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSN, 0x00);
+	}
 
 	return 0;
 }

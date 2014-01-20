@@ -50,6 +50,9 @@ extern int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const stru
 extern bool PIOS_ADS1299_IRQHandler(void);
 extern int32_t PIOS_ADS1299_ReadData(struct pios_ads1299_data *data);
 
+//! Toggle whether the impedance monitoring signal is output
+extern int32_t PIOS_ADS1299_EnableImpedance(bool enable);
+
 #endif /* PIOS_ADS1299_H */
 
 /** 
