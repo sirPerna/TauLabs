@@ -153,16 +153,19 @@ static void EegTask(void *parameters)
 				
 				for (uint32_t i = 0; i < CHANNELS; i++) {
 
-					float a = 2.0f / PERIODS * cos_accum[i];
-					float b = 2.0f / PERIODS * sin_accum[i];
+					float a = cos_accum[i] / 2.0f / PERIODS;
+					float b = sin_accum[i] / 2.0f / PERIODS;
 					float amp = sqrtf(a*a + b*b); //uV
 
-					// +/- 6nA square wave pulse. Convert voltage to nV
-					eegStatus.Impedance[i] = eegStatus.Impedance[i] * IMPEDANCE_ALPHA +
-					                         (1 - IMPEDANCE_ALPHA) * amp * 1000.0f / 12.0f;
+					// Fudge factor. This is a square wave pulse and we are measuring
+					// the amplitude of the base component. This compensates.
+					amp *= 0.7071f; // sqrt(2)
 
-					// Fudge factor
-					// eegStatus.Impedance[i] /= 2.6f;
+					// +/- 6nA square wave pulse. Convert voltage to nV
+					float impedance =  amp * 1000.0f / 6.0f;
+
+					eegStatus.Impedance[i] = eegStatus.Impedance[i] * IMPEDANCE_ALPHA +
+					                         (1 - IMPEDANCE_ALPHA) * impedance;
 
 					// Reset the accumulator
 					cos_accum[i] = 0;
