@@ -1,0 +1,11 @@
+<xml>
+    <object name="EEGSettings" singleinstance="true" settings="true">
+        <description>Settings for the EEG</description>
+        <field name="ImpedanceMonitoring" units="" type="enum" elements="1" options="FALSE,TRUE" defaultvalue="FALSE"/>
+        <field name="SamplingRate" units="" type="enum" elements="1" options="250,500,1000,2000" defaultvalue="500"/>
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="true" updatemode="onchange" period="0"/>
+        <telemetryflight acked="true" updatemode="onchange" period="0"/>
+        <logging updatemode="manual" period="0"/>
+    </object>
+</xml>

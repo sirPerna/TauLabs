@@ -32,6 +32,7 @@
 #include "pios_ads1299.h"
 
 #include "eegdata.h"
+#include "eegsettings.h"
 #include "eegstatus.h"
 
 // Private constants
@@ -46,6 +47,7 @@ static xTaskHandle taskHandle;
 
 // Private functions
 static void EegTask(void *parameters);
+static void settingsUpdatedCb(UAVObjEvent * objEv);
 
 int32_t EEGInitialize()
 {
@@ -100,6 +102,9 @@ static void EegTask(void *parameters)
 	}
 #else
 
+	EEGSettingsConnectCallback(&settingsUpdatedCb);
+	settingsUpdatedCb(NULL);
+
 	struct pios_ads1299_data data;
 	uint32_t sample = 0;
 	while(1) {
@@ -120,4 +125,27 @@ static void EegTask(void *parameters)
 
 	}
 #endif
+}
+
+static void settingsUpdatedCb(UAVObjEvent * ev) 
+{
+	EEGSettingsData eegSettings;
+	EEGSettingsGet(&eegSettings);
+
+	switch(eegSettings.SamplingRate) {
+	case EEGSETTINGS_SAMPLINGRATE_250:
+		PIOS_ADS1299_SetSamplingRate(ADS1299_250_SPS);
+		break;
+	case EEGSETTINGS_SAMPLINGRATE_500:
+		PIOS_ADS1299_SetSamplingRate(ADS1299_500_SPS);
+		break;
+	case EEGSETTINGS_SAMPLINGRATE_1000:
+		PIOS_ADS1299_SetSamplingRate(ADS1299_1000_SPS);
+		break;
+	case EEGSETTINGS_SAMPLINGRATE_2000:
+		PIOS_ADS1299_SetSamplingRate(ADS1299_2000_SPS);
+		break;
+	}
+
+	PIOS_ADS1299_EnableImpedance(eegSettings.ImpedanceMonitoring == EEGSETTINGS_IMPEDANCEMONITORING_TRUE);
 }
