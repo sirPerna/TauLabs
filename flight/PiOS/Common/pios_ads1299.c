@@ -216,8 +216,8 @@ int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios
 	if ((PIOS_ADS1299_ReadID() & 0x1F) != 0b00011110)
 		return -1;
 
-	PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG1, 0x96); /* No daisy chain, 250 sps */
-
+	PIOS_ADS1299_SetSamplingRate(ADS1299_250_SPS);
+	
 	PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG3, ADS1299_CONFIG3_PWR_REF | 
 	                    ADS1299_CONFIG3_BIAS_INT | ADS1299_CONFIG3_PWR_BIAS);
 
@@ -276,6 +276,27 @@ int32_t PIOS_ADS1299_EnableImpedance(bool enable)
 	} else {
 		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSP, 0x00); // Test no leads
 		PIOS_ADS1299_SetReg(ADS1299_REG_LOFF_SENSN, 0x00);
+	}
+
+	return 0;
+}
+
+//! Set sampling rate
+int32_t PIOS_ADS1299_SetSamplingRate(enum ads1299_sampling sampling)
+{
+	switch(sampling) {
+	case ADS1299_250_SPS:
+		PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG1, 0x96); /* No daisy chain, 250 sps */
+		break;
+	case ADS1299_500_SPS:
+		PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG1, 0x95); /* No daisy chain, 500 sps */
+		break;
+	case ADS1299_1000_SPS:
+		PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG1, 0x94); /* No daisy chain, 1000 sps */
+		break;
+	case ADS1299_2000_SPS:
+		PIOS_ADS1299_SetReg(ADS1299_REG_CONFIG1, 0x93); /* No daisy chain, 2000 sps */
+		break;
 	}
 
 	return 0;

@@ -45,6 +45,9 @@ struct pios_ads1299_data {
 	float channels[8];
 };
 
+//! The sampling rate options
+enum ads1299_sampling { ADS1299_250_SPS, ADS1299_500_SPS, ADS1299_1000_SPS, ADS1299_2000_SPS };
+
 /* Public Functions */
 extern int32_t PIOS_ADS1299_Init(uint32_t spi_id, uint32_t slave_num, const struct pios_ads1299_cfg *new_cfg);
 extern bool PIOS_ADS1299_IRQHandler(void);
@@ -52,6 +55,9 @@ extern int32_t PIOS_ADS1299_ReadData(struct pios_ads1299_data *data);
 
 //! Toggle whether the impedance monitoring signal is output
 extern int32_t PIOS_ADS1299_EnableImpedance(bool enable);
+
+//! Set sampling rate
+extern int32_t PIOS_ADS1299_SetSamplingRate(enum ads1299_sampling sampling);
 
 #endif /* PIOS_ADS1299_H */
 
