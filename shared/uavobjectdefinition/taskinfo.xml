@@ -33,11 +33,8 @@
 			<elementname>VibrationAnalysis</elementname>
 			<elementname>Battery</elementname>
 			<elementname>UAVOHoTTBridge</elementname>
-<<<<<<< HEAD
 			<elementname>UAVOFrSKYSensorHubBridge</elementname>
-=======
 			<elementname>PicoC</elementname>
->>>>>>> PicoC: First running version for quanton and flyingf4
 		</elementnames>
 	</field> 
 	<field name="Running" units="bool" type="enum">
@@ -72,11 +69,8 @@
 			<elementname>VibrationAnalysis</elementname>
 			<elementname>Battery</elementname>
 			<elementname>UAVOHoTTBridge</elementname>
-<<<<<<< HEAD
 			<elementname>UAVOFrSKYSBridge</elementname>
-=======
 			<elementname>PicoC</elementname>
->>>>>>> PicoC: First running version for quanton and flyingf4
 		</elementnames>
 		<options>
 			<option>False</option>
@@ -115,11 +109,8 @@
 			<elementname>VibrationAnalysis</elementname>
 			<elementname>Battery</elementname>
 			<elementname>UAVOHoTTBridge</elementname>
-<<<<<<< HEAD
 			<elementname>UAVOFrSKYSensorHubBridge</elementname>
-=======
 			<elementname>PicoC</elementname>
->>>>>>> PicoC: First running version for quanton and flyingf4
 		</elementnames>
 	</field> 
 	<access gcs="readwrite" flight="readwrite"/>
