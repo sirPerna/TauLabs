@@ -23,6 +23,7 @@
 				<elementname>VibrationAnalysis</elementname>
 				<elementname>UAVOHoTTBridge</elementname>
 				<elementname>UAVOFrSKYSensorHubBridge</elementname>
+				<elementname>Logging</elementname>
 			</elementnames>
 		</field>
 
