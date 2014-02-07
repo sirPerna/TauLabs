@@ -121,6 +121,8 @@ MODULE_INITCALL(LoggingInitialize, LoggingStart);
 
 static void loggingTask(void *parameters)
 {
+	PIOS_COM_ChangeBaud(logging_com_id, 57600);
+
 	// Loop forever
 	while (1) {
 
