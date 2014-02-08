@@ -35,6 +35,7 @@
 #include "gyros.h"
 #include "baroaltitude.h"
 #include "gpsposition.h"
+#include "gpstime.h"
 
 // Private constants
 #define MAX_QUEUE_SIZE   5
@@ -123,16 +124,26 @@ static void loggingTask(void *parameters)
 {
 	PIOS_COM_ChangeBaud(logging_com_id, 57600);
 
+	int i = 0;
 	// Loop forever
 	while (1) {
 
 		// Do not update anything at more than 40 Hz
-		vTaskDelay(25);
+		vTaskDelay(20);
 		UAVTalkSendObjectTimestamped(uavTalkCon, AttitudeActualHandle(), 0, false, 0);
 		UAVTalkSendObjectTimestamped(uavTalkCon, AccelsHandle(), 0, false, 0);
-		UAVTalkSendObjectTimestamped(uavTalkCon, GyrosHandle(), 0, false, 0);
-		UAVTalkSendObjectTimestamped(uavTalkCon, BaroAltitudeHandle(), 0, false, 0);
-		UAVTalkSendObjectTimestamped(uavTalkCon, GPSPositionHandle(), 0, false, 0);
+
+		if ((i % 10) == 0) {
+			UAVTalkSendObjectTimestamped(uavTalkCon, GyrosHandle(), 0, false, 0);
+			UAVTalkSendObjectTimestamped(uavTalkCon, BaroAltitudeHandle(), 0, false, 0);
+			UAVTalkSendObjectTimestamped(uavTalkCon, GPSPositionHandle(), 0, false, 0);
+		}
+
+		if ((i % 50) == 1) {
+			UAVTalkSendObjectTimestamped(uavTalkCon, GPSTimeHandle(), 0, false, 0);	
+		}
+
+		i++;
 	}
 }
 
