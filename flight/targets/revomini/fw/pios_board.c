@@ -171,6 +171,9 @@ uintptr_t pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE];
 
 #define PIOS_COM_MAVLINK_TX_BUF_LEN 128
 
+#define PIOS_COM_PICOC_RX_BUF_LEN 128
+#define PIOS_COM_PICOC_TX_BUF_LEN 128
+
 #define PIOS_COM_RFM22B_RF_RX_BUF_LEN 512
 #define PIOS_COM_RFM22B_RF_TX_BUF_LEN 512
 
@@ -187,6 +190,7 @@ uintptr_t pios_com_bridge_id;
 uintptr_t pios_com_overo_id;
 uintptr_t pios_com_mavlink_id;
 uintptr_t pios_com_hott_id;
+uintptr_t pios_com_picoc_id;
 uint32_t pios_rfm22b_id;
 uintptr_t pios_internal_adc_id = 0;
 uintptr_t pios_uavo_settings_fs_id;
@@ -614,6 +618,11 @@ void PIOS_Board_Init(void) {
 			PIOS_Board_configure_com(&pios_usart_main_cfg, PIOS_COM_TELEM_RF_RX_BUF_LEN, PIOS_COM_TELEM_RF_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_hott_id);
 #endif /* PIOS_INCLUDE_HOTT */
 			break;
+		case HWREVOMINI_MAINPORT_PICOC:
+#if defined(PIOS_INCLUDE_PICOC) && defined(PIOS_INCLUDE_USART) && defined(PIOS_INCLUDE_COM)
+			PIOS_Board_configure_com(&pios_usart_main_cfg, PIOS_COM_PICOC_RX_BUF_LEN, PIOS_COM_PICOC_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_picoc_id);
+#endif /* PIOS_INCLUDE_PICOC */
+		break;
 	} /* 	hw_mainport */
 
 	if (hw_mainport != HWREVOMINI_MAINPORT_SBUS) {
@@ -715,6 +724,11 @@ void PIOS_Board_Init(void) {
 			PIOS_Board_configure_com(&pios_usart_flexi_cfg, PIOS_COM_TELEM_RF_RX_BUF_LEN, PIOS_COM_TELEM_RF_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_hott_id);
 #endif /* PIOS_INCLUDE_HOTT */
 			break;
+		case HWREVOMINI_FLEXIPORT_PICOC:
+#if defined(PIOS_INCLUDE_PICOC) && defined(PIOS_INCLUDE_USART) && defined(PIOS_INCLUDE_COM)
+			PIOS_Board_configure_com(&pios_usart_flexi_cfg, PIOS_COM_PICOC_RX_BUF_LEN, PIOS_COM_PICOC_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_picoc_id);
+#endif /* PIOS_INCLUDE_PICOC */
+		break;
 	} /* hwsettings_rv_flexiport */
 
 	/* Initalize the RFM22B radio COM device. */

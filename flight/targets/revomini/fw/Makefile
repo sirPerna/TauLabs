@@ -56,6 +56,7 @@ OPTMODULES += VibrationAnalysis
 OPTMODULES += UAVOMavlinkBridge
 OPTMODULES += Airspeed/revolution
 OPTMODULES += UAVOHoTTBridge
+OPTMODULES += PicoC
 
 # Paths
 OPUAVTALKINC = $(OPUAVTALK)/inc
