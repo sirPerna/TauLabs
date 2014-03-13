@@ -57,7 +57,7 @@
 
 // Private constants
 #define MAX_QUEUE_SIZE 4
-#define STACK_SIZE_BYTES 540
+#define STACK_SIZE_BYTES 580
 #define TASK_PRIORITY (tskIDLE_PRIORITY+1)
 
 // Private variables
