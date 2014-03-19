@@ -32,8 +32,8 @@
 #include <coreplugin/iconnection.h>
 #include <coreplugin/idevice.h>
 #include <extensionsystem/pluginmanager.h>
-#include "qextserialport/src/qextserialenumerator.h"
-#include "qextserialport/src/qextserialport.h"
+#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
 #include <QLabel>
 #include <QHBoxLayout>
@@ -389,8 +389,9 @@ void ConnectionManager::updateConnectionList(IConnection *connection)
             }
 
             // We have to delete the IDevice in that DevListItem before getting rid
-            // of the iter itself.
-            delete(iter->device);
+            // of the iter itself
+            if(!iter->device.isNull())
+                iter->device->deleteLater();
 
             iter = m_devList.erase(iter);
         } else

@@ -35,10 +35,6 @@
 #include <QtCore/QDebug>
 
 
-#ifdef Q_WS_MAC
-#include <qmacstyle_mac.h>
-#endif
-
 using namespace Core;
 using namespace Core::Internal;
 
@@ -376,7 +372,7 @@ void SplitterOrView::restoreState(QSettings* qSettings)
     } else if (mode == "uavGadget") {
         QString classId = qSettings->value("classId").toString();
         int index = m_view->indexOfClassId(classId);
-        m_view->listSelectionActivated(index);
+        m_view->selectionActivated(index, false);
         if(qSettings->childGroups().contains("gadget")) {
             qSettings->beginGroup("gadget");
             gadget()->restoreState(qSettings);

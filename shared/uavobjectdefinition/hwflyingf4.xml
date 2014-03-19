@@ -30,9 +30,11 @@
 				<option>ComBridge</option>
 				<option>MavLinkTX</option>
 				<option>MavLinkTX_GPS_RX</option>
+				<option>FrSKY Sensor Hub</option>
 				<option>HoTT SUMD</option>
 				<option>HoTT SUMH</option>
 				<option>PicoC</option>
+				<option>LighttelemetryTx</option>
 			</options>
 		</field>
 		
@@ -48,9 +50,11 @@
 				<option>ComBridge</option>
 				<option>MavLinkTX</option>
 				<option>MavLinkTX_GPS_RX</option>
+				<option>FrSKY Sensor Hub</option>
 				<option>HoTT SUMD</option>
 				<option>HoTT SUMH</option>
 				<option>PicoC</option>
+				<option>LighttelemetryTx</option>
 			</options>
 		</field>
 
