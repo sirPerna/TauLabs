@@ -125,9 +125,15 @@ void InnovateAttitudeEKF(	Attitude_Estimation_States_Type *states,
 	cdtheta = fast_cos(dtheta);
 
 	dq_int.q0 = cdtheta;
-	dq_int.q1 = sdtheta * (w_hat.x / w_norm);
-	dq_int.q2 = sdtheta * (w_hat.y / w_norm);
-	dq_int.q3 = sdtheta * (w_hat.z / w_norm);
+	if (w_norm > 1e-9f) {
+		dq_int.q1 = sdtheta * (w_hat.x / w_norm);
+		dq_int.q2 = sdtheta * (w_hat.y / w_norm);
+		dq_int.q3 = sdtheta * (w_hat.z / w_norm);
+	} else {
+		dq_int.q1 = 0.0f;
+		dq_int.q2 = 0.0f;
+		dq_int.q3 = 0.0f;
+	}
 	//dq_int = qstep_body(states->q, w_hat, dt);
 
 	/* Use the delta quaternion to produce the current estimate of the attitude */
