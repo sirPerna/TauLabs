@@ -34,6 +34,7 @@
 // Include particular filters to get their handles
 #include "cf_interface.h"
 #include "cfnav_interface.h"
+#include "srekf_interface.h"
 
 #include "attitudeactual.h"
 #include "gyrosbias.h"
@@ -68,6 +69,9 @@ int32_t StateInitialize(void)
 		break;
 	case STATEFILTER_FILTER_COMPNAV:
 		current_filter = &cfnav_filter_driver;
+		break;
+	case STATEFILTER_FILTER_SREKF:
+		current_filter = &srekf_filter_driver;
 		break;
 	default:
 		goto FAIL;
