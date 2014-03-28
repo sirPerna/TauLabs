@@ -28,6 +28,9 @@
 #include "filter_interface.h"
 #include "filter_infrastructure_se3.h"
 
+#include "attitude_ekf.h"
+#include "quaternion.h"
+
 static int32_t srekf_interface_init(uintptr_t *id);
 static int32_t srekf_interface_reset(uintptr_t id);
 static int32_t srekf_interface_update(uintptr_t id, float gyros[3], float accels[3], 
@@ -55,13 +58,14 @@ const struct filter_driver srekf_filter_driver = {
 	}
 };
 
-
 enum srekf_interface_magic {
 	SREKF_INTERFACE_MAGIC = 0xB34BFE8C,
 };
 
 struct srekf_interface_data {
 	struct filter_infrastructure_se3_data *s3_data;
+	Attitude_Estimation_States_Type state;
+	Attitude_Estimation_Settings_Type settings;
 	enum srekf_interface_magic magic;
 };
 
@@ -120,9 +124,20 @@ static int32_t srekf_interface_init(uintptr_t *id)
  */
 static int32_t srekf_interface_reset(uintptr_t id)
 {
-	struct srekf_interface_data *cf = (struct srekf_interface_data *) id;
-	if (!srekf_interface_validate(cf))
+	struct srekf_interface_data *srekf = (struct srekf_interface_data *) id;
+	if (!srekf_interface_validate(srekf))
 		return -1;
+
+	quaternion_t q_init;
+	vector3f_t wb_init = {0.0f, 0.0f, 0.0f};
+	vector3f_t acc_init = {0.0f, 0.0f, -9.81f};
+	vector3f_t mag_init = {250.0f, 0.0f, 450.0f};
+
+	/* Generate the starting guess quaternion */
+	GenerateStartingGuess(&acc_init, &mag_init, &q_init);
+
+	/* Initialize the estimation */
+	AttitudeEstimationInit(&srekf->state, &srekf->settings, &q_init, &wb_init, 0.005f);
 
 	return 0;
 }
@@ -144,10 +159,26 @@ static int32_t srekf_interface_update(uintptr_t id, float gyros[3], float accels
 		float mag[3], float pos[3], float vel[3], float baro[1],
 		float airspeed[1], float dt)
 {
-	struct srekf_interface_data *cf = (struct srekf_interface_data *) id;
-	if (!srekf_interface_validate(cf))
+	struct srekf_interface_data *srekf = (struct srekf_interface_data *) id;
+	if (!srekf_interface_validate(srekf))
 		return -1;
-	
+
+	static float mag_s[3] = {250.0f, 0.0f, 400.0f};
+	if (mag != NULL) {
+		// Repeat most recent mag measurement until filter handles asynchronous data
+		mag_s[0] = mag[0];
+		mag_s[1] = mag[1];
+		mag_s[2] = mag[2];
+	}
+
+	InnovateAttitudeEKF(&srekf->state,
+	                    &srekf->settings,
+	                    gyros,
+	                    accels,
+	                    mag_s,
+	                    0.0f,
+	                    0.0f,
+	                    dt);
 	return 0;
 }
 
@@ -164,6 +195,16 @@ static int32_t srekf_interface_update(uintptr_t id, float gyros[3], float accels
 static int32_t srekf_interface_get_state(uintptr_t id, float pos[3], float vel[3],
 		float attitude[4], float gyro_bias[3], float airspeed[1])
 {
+	struct srekf_interface_data *srekf = (struct srekf_interface_data *) id;
+	if (!srekf_interface_validate(srekf))
+		return -1;
+
+	if (attitude) {
+		attitude[0] = srekf->state.q.q0;
+		attitude[1] = srekf->state.q.q1;
+		attitude[2] = srekf->state.q.q2;
+		attitude[3] = srekf->state.q.q3;
+	}
 	return 0;
 }
 
