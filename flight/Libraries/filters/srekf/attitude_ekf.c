@@ -101,7 +101,6 @@ void InnovateAttitudeEKF(	Attitude_Estimation_States_Type *states,
 							float u_sum,
 							float dt)
 {
-	uint32_t i, j;
 	float R[3][3];
 	float w_norm, dtheta, sdtheta, cdtheta, t1, t2, t3, x_hat[6];
 	quaternion_t dq_int;

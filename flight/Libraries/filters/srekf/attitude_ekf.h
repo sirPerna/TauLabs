@@ -2,12 +2,10 @@
 #define __ATTITUDE_EKF_H
 
 /* Standard includes */
-#include "stm32f4xx.h"
 #include <math.h>
 
 /* System includes */
 #include "quaternion.h"
-#include "sensor_read.h"
 #include "linear_algebra.h"
 #include "trigonometry.h"
 
