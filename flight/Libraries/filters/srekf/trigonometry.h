@@ -122,11 +122,21 @@ static inline float fast_cos(float x)
 
 static inline float invSqrt(float x)
 {
+	union {
+		float f;
+		long l;
+	} caster;
+
 	float halfx = 0.5f * x;
-	float y = x;
-	long i = *(long*)&y;
+
+	caster.f = x;
+	long i = caster.l;
+
 	i = 0x5f3759df - (i>>1);
-	y = *(float*)&i;
+
+	caster.l = i;
+	float y = caster.f;
+
 	y = y * (1.5f - (halfx * y * y));
 	return y;
 }
